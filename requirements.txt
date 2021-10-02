@@ -1,2 +1,3 @@
-PyGithub
 keyring
+PyGithub
+requests

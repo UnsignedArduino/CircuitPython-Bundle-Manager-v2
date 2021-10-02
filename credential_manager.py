@@ -10,6 +10,13 @@ logger = create_logger(name=__name__, level=logging.DEBUG)
 
 class CredentialManager:
     def __init__(self, service_name: str, github_token_name: str):
+        """
+        Make a CredentialManager.
+
+        :param service_name: The name of the service.
+        :param github_token_name: The username for storing and reading the
+         GitHub token.
+        """
         self.service_name = service_name
         self.github_token_name = github_token_name
         self.github_token = None
