@@ -1,19 +1,18 @@
 import logging
 
 
-def create_logger(name: str = __name__,
-                  level: int = logging.DEBUG) -> logging.Logger:
+def create_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     """
     A simple function to create a logger. You would typically put this right
-    under all the other modules you imported:
+    under all the other modules you imported.
 
     And then call `logger.debug()`, `logger.info()`, `logger.warning()`,
     `logger.error()`, `logger.critical()`, and
     `logger.exception` everywhere in that module.
 
-    :param name: A string with the logger name. Defaults to __name__.
+    :param name: A string with the logger name.
     :param level: A integer with the logger level. Defaults to logging.DEBUG.
-    :return: A logging.getLogger which you can use as a regular logger.
+    :return: A logging.Logger which you can use as a regular logger.
     """
     logger = logging.getLogger(name=name)
     console_handler = logging.StreamHandler()
