@@ -50,10 +50,16 @@ class GitHubManager(metaclass=Singleton):
         # To test, I used this code: (Make sure you have GitHub token stored in
         # CredentialManager!)
         #
-        # from bundle_manager import BundleManager
-        # from github_manager import GitHubManager
-        # bm = BundleManager()
-        # gm = GitHubManager(bm.cred_manager.get_github_token())
+        # from pathlib import Path
+        #
+        # BUNDLES_PATH = Path.cwd() / "bundles"
+        # BUNDLE_REPO = "adafruit/Adafruit_CircuitPython_Bundle"
+        #
+        # from circuitpython_bundle_manager import CircuitPythonBundleManager
+        # from managers.github_manager import GitHubManager
+        # cpybm = CircuitPythonBundleManager()
+        # gm = GitHubManager(cpybm.cred_manager.get_github_token(),
+        #                    BUNDLE_REPO, BUNDLES_PATH)
         # releases = gm.get_bundle_releases()
         # gm.download_release(releases[0])
         logger.debug(f"Downloading {release}")
