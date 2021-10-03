@@ -10,6 +10,28 @@ from helpers.singleton import Singleton
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
+class Module:
+    def __init__(self, path: Path, data: dict):
+        """
+        Make a Module.
+
+        :param path: The path to the module. Can be either a single file or a
+         directory. (package)
+        :param data: A dictionary containing the dependencies for all modules.
+        """
+        self.path = path
+        self.name = path.name
+        self.is_package = data[self.path.stem]["package"]
+        self.pypi_name = data[self.path.stem]["pypi_name"]
+        self.version = data[self.path.stem]["version"]
+        self.repo = data[self.path.stem]["repo"]
+        self.dependencies = []
+        for dependency in data[self.path.stem]["dependencies"]:
+            self.dependencies.append(
+                Module(self.path.parent / dependency, data)
+            )
+
+
 class Bundle:
     def __init__(self, path: Path):
         """
@@ -26,7 +48,26 @@ class Bundle:
         self.bundle_paths = []
         self.versions = []
         self.module_dependencies = {}
+        self.bundle = {}
         self.load_metadata()
+        self.load_modules()
+
+    def load_modules(self):
+        """
+        Load the modules in the bundle.
+        """
+        logger.debug("Loading modules")
+        for bundle in self.bundle_paths:
+            version = bundle.name
+            version = version.replace("adafruit-circuitpython-bundle-", "")
+            version = version.replace(f"-{self.tag_name}", "")
+            modules_path = bundle / "lib"
+            logger.debug(f"Found {len(list(modules_path.glob('*')))} modules "
+                         f"in {version} version")
+            modules = {}
+            for path in modules_path.glob("*"):
+                modules[path.name] = Module(path, self.module_dependencies)
+            self.bundle[version] = modules
 
     def load_metadata(self):
         """
