@@ -10,21 +10,23 @@ from github.GitRelease import GitRelease
 
 from helpers.create_logger import create_logger
 from helpers.sanitizers import filename_sanitize, directory_sanitize
+from helpers.singleton import Singleton
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
-BUNDLE_REPO = "adafruit/Adafruit_CircuitPython_Bundle"
-BUNDLES_PATH = Path.cwd() / "bundles"
 
-
-class GitHubManager:
-    def __init__(self, token: str):
+class GitHubManager(metaclass=Singleton):
+    def __init__(self, token: str, bundle_repo: str, bundle_path: Path):
         """
         Make a GitHub manager.
 
         :param token: The token to use to authenticate with the GitHub APIs.
+        :param bundle_repo: The repo to download releases from.
+        :param bundle_path: The path to where bundles are stored.
         """
         self.token = token
+        self.bundle_repo = bundle_repo
+        self.bundle_path = bundle_path
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
 
@@ -35,7 +37,7 @@ class GitHubManager:
         :return: A list of github.GitRelease.GitRelease
         """
         logger.debug("Getting repo...")
-        repo = self.github.get_repo(BUNDLE_REPO)
+        repo = self.github.get_repo(self.bundle_repo)
         logger.debug("Getting releases...")
         return list(repo.get_releases())
 
@@ -62,8 +64,8 @@ class GitHubManager:
             "url": release.html_url,
             "released": release.published_at.timestamp()
         }
-        BUNDLES_PATH.mkdir(exist_ok=True)
-        path = BUNDLES_PATH / directory_sanitize(release.title)
+        self.bundle_path.mkdir(exist_ok=True)
+        path = self.bundle_path / directory_sanitize(release.title)
         logger.debug(f"Path to new bundle is {path}")
         path.mkdir()
         if len(list(path.iterdir())) > 0:

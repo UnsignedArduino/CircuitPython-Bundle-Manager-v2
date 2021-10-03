@@ -4,11 +4,12 @@ from typing import Union
 import keyring
 
 from helpers.create_logger import create_logger
+from helpers.singleton import Singleton
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-class CredentialManager:
+class CredentialManager(metaclass=Singleton):
     def __init__(self, service_name: str, github_token_name: str):
         """
         Make a CredentialManager.
