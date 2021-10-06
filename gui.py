@@ -47,10 +47,10 @@ class CircuitPythonBundleManagerGUI(MainWindow):
         self.notebook = Notebook(self)
         self.notebook.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         make_resizable(self, 0, 0)
-        self.notebook.tabs += [BundleTab(self.notebook),
-                               ModulesTab(self.notebook),
-                               DriveTab(self.notebook),
-                               OtherTab(self.notebook)]
+        self.notebook.tabs += [BundleTab(self.notebook, self.cpybm),
+                               ModulesTab(self.notebook, self.cpybm),
+                               DriveTab(self.notebook, self.cpybm),
+                               OtherTab(self.notebook, self.cpybm)]
         self.notebook.update_tabs()
 
     def load_icon(self):

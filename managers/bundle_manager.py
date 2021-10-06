@@ -107,6 +107,7 @@ class BundleManager(metaclass=Singleton):
         Search the bundle paths for bundles.
         """
         logger.debug("Indexing bundles...")
+        self.bundles = []
         for path in self.bundle_path.glob("*"):
             if not path.is_dir():
                 continue
