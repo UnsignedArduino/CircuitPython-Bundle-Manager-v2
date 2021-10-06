@@ -9,6 +9,6 @@ logger = create_logger(name=__name__, level=logging.DEBUG)
 ICON_PATH = Path.cwd() / "icon.png"
 
 gui = CircuitPythonBundleManagerGUI()
-
+gui.lift()
 logger.debug("Starting event loop")
 gui.mainloop()
