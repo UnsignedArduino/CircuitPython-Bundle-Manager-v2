@@ -4,12 +4,15 @@ from pathlib import Path
 
 from PIL.ImageTk import PhotoImage
 from TkZero.MainWindow import MainWindow
-from TkZero.Notebook import Notebook, Tab
-from typing import Iterable, Union
-import tkinter as tk
+from TkZero.Notebook import Notebook
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
+from helpers.resize import make_resizable
+from ui.bundle_tab import BundleTab
+from ui.drive_tab import DriveTab
+from ui.modules_tab import ModulesTab
+from ui.other_tab import OtherTab
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -43,37 +46,12 @@ class CircuitPythonBundleManagerGUI(MainWindow):
         logger.debug("Creating notebook")
         self.notebook = Notebook(self)
         self.notebook.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.make_resizable(self, 0, 0)
-        self.bundle_tab = Tab(self.notebook, "Bundle")
-        self.modules_tab = Tab(self.notebook, "Modules")
-        self.drive_tab = Tab(self.notebook, "Drive")
-        self.other_tab = Tab(self.notebook, "Other")
-        self.notebook.tabs += [self.bundle_tab, self.modules_tab,
-                               self.drive_tab, self.other_tab]
+        make_resizable(self, 0, 0)
+        self.notebook.tabs += [BundleTab(self.notebook),
+                               ModulesTab(self.notebook),
+                               DriveTab(self.notebook),
+                               OtherTab(self.notebook)]
         self.notebook.update_tabs()
-
-    def make_resizable(self, parent, rows: Union[Iterable, int],
-                       cols: Union[Iterable, int], weight: int = 1):
-        """
-        Configure the rows and columns to have a weight of 1.
-
-        :param parent: A Tkinter widget to use.
-        :param rows: An Iterable or an int, specifying which row(s) to
-         configure.
-        :param cols: An Iterable or an int, specifying which column(s) to
-         configure.
-        :param weight: The weight to set. Defaults to 1.
-        """
-        if isinstance(rows, int):
-            parent.rowconfigure(rows, weight=weight)
-        else:
-            for row in rows:
-                parent.rowconfigure(row, weight=weight)
-        if isinstance(cols, int):
-            parent.columnconfigure(cols, weight=weight)
-        else:
-            for col in cols:
-                parent.columnconfigure(col, weight=weight)
 
     def load_icon(self):
         """
