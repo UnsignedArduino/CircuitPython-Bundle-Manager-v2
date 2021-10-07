@@ -1,8 +1,10 @@
+import logging
 from pathlib import Path
+from shutil import rmtree
 
 from helpers.operating_system import on_linux, on_macos
 from helpers.singleton import Singleton
-from managers.bundle_manager import BundleManager
+from managers.bundle_manager import BundleManager, Bundle
 from managers.credential_manager import CredentialManager
 from managers.device_manager import DeviceManager
 
@@ -24,3 +26,14 @@ class CircuitPythonBundleManager(metaclass=Singleton):
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
         self.device_manager = DeviceManager(DRIVE_PATH)
+
+    def delete_bundle(self, bundle: Bundle):
+        """
+        Delete a bundle.
+
+        :param bundle: A Bundle.
+        """
+        logging.warning(f"Deleting bundle {bundle}")
+        path = bundle.path
+        logging.debug(f"Path is {path}")
+        rmtree(path)

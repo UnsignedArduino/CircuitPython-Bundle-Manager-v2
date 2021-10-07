@@ -3,6 +3,7 @@ import tkinter as tk
 from threading import Thread
 
 from TkZero.Button import Button
+from TkZero.Dialog import ask_ok_or_cancel, show_error
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Listbox import Listbox
@@ -13,6 +14,7 @@ from TkZero.Separator import Separator, OrientModes
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
+from ui.dialogs.loading import show_deleting
 from ui.dialogs.bundle_info import show_bundle_info
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
@@ -63,7 +65,8 @@ class BundleTab(Tab):
         self.buttons_frame.grid(row=3, column=1, sticky=tk.NSEW)
         self.add_button = Button(self.buttons_frame, text="Add bundle...")
         self.add_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.pop_button = Button(self.buttons_frame, text="Remove bundle")
+        self.pop_button = Button(self.buttons_frame, text="Remove bundle",
+                                 command=self.pop_bundle)
         self.pop_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
         Separator(self.buttons_frame, orientation=OrientModes.Horizontal).grid(
             row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
@@ -80,6 +83,43 @@ class BundleTab(Tab):
         self.refresh_button = Button(self.buttons_frame, text="Refresh",
                                      command=self.update_bundle_listbox)
         self.refresh_button.grid(row=7, column=0, padx=1, pady=1, sticky=tk.NSEW)
+
+    def pop_bundle(self):
+        """
+        Pop the currently selected bundle.
+        """
+        bundle = self.cpybm.selected_bundle
+        if not ask_ok_or_cancel(self, title="CircuitPython Bundle Manager v2: Confirm",
+                                message="Are you sure you want to delete "
+                                        "the selected bundle?",
+                                detail=f"Selected bundle: {bundle.title}"):
+            return
+        dialog = show_deleting(self, bundle.title)
+        logging.debug(f"Deleting bundle {bundle}")
+
+        self.listbox_frame.enabled = False
+        self.buttons_frame.enabled = False
+
+        def delete():
+            try:
+                self.cpybm.delete_bundle(bundle)
+            except Exception as e:
+                logger.exception("Exception while deleting bundle")
+                show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                           message="Error while deleting bundle!",
+                           detail=str(e))
+            self.cpybm.selected_bundle = None
+            self.listbox_frame.enabled = True
+            self.buttons_frame.enabled = True
+            self.listbox.selected = ()
+            self.update_bundle_listbox()
+            self.update_selected_bundle()
+            self.update_buttons()
+            dialog.close()
+
+        t = Thread(target=delete, daemon=True)
+        logger.debug(f"Spawning thread {t}")
+        t.start()
 
     def show_bundle_info(self):
         """
