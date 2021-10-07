@@ -1,5 +1,6 @@
 import logging
 import tkinter as tk
+from threading import Thread
 
 from TkZero.Button import Button
 from TkZero.Frame import Frame
@@ -9,10 +10,10 @@ from TkZero.Notebook import Tab, Notebook
 from TkZero.Scrollbar import Scrollbar
 from TkZero.Separator import Separator, OrientModes
 
-from helpers.create_logger import create_logger
-from threading import Thread
-from helpers.resize import make_resizable
 from circuitpython_bundle_manager import CircuitPythonBundleManager
+from helpers.create_logger import create_logger
+from helpers.resize import make_resizable
+from ui.dialogs.bundle_info import show_bundle_info
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -66,13 +67,22 @@ class BundleTab(Tab):
         self.select_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NSEW)
         Separator(self.buttons_frame, orientation=OrientModes.Horizontal).grid(
             row=4, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.info_button = Button(self.buttons_frame, text="Bundle info")
+        self.info_button = Button(self.buttons_frame, text="Bundle info",
+                                  command=self.show_bundle_info)
         self.info_button.grid(row=5, column=0, padx=1, pady=1, sticky=tk.NSEW)
         Separator(self.buttons_frame, orientation=OrientModes.Horizontal).grid(
             row=6, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.refresh_button = Button(self.buttons_frame, text="Refresh",
                                      command=self.update_bundle_listbox)
         self.refresh_button.grid(row=7, column=0, padx=1, pady=1, sticky=tk.NSEW)
+
+    def show_bundle_info(self):
+        """
+        Show info about the bundle.
+        """
+        bundle = self.bundles[self.listbox.selected[0]]
+        logger.debug(f"Showing info about {bundle}")
+        show_bundle_info(self, bundle)
 
     def update_buttons(self):
         """
@@ -97,7 +107,9 @@ class BundleTab(Tab):
             self.selected_label.text = "Selected bundle: None"
         else:
             name = self.listbox.values[self.listbox.selected[0]]
-            logger.debug(f"Selected bundle: {name}")
+            bundle = self.bundles[self.listbox.selected[0]]
+            self.cpybm.selected_bundle = bundle
+            logger.debug(f"Selected bundle: {bundle}")
             self.selected_label.text = f"Selected bundle: {name}"
 
     def make_bundle_listbox(self):
@@ -120,11 +132,12 @@ class BundleTab(Tab):
         logger.debug("Updating list of bundles")
         self.listbox_frame.enabled = False
         self.buttons_frame.enabled = False
+        self.bundles = []
 
         def update():
             self.cpybm.bundle_manager.index_bundles()
-            bundles = self.cpybm.bundle_manager.bundles
-            self.listbox.values = [b.title for b in bundles]
+            self.bundles = self.cpybm.bundle_manager.bundles
+            self.listbox.values = [b.title for b in self.bundles]
             self.listbox_frame.enabled = True
             self.buttons_frame.enabled = True
             self.update_buttons()

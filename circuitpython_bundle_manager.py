@@ -20,6 +20,7 @@ else:
 
 class CircuitPythonBundleManager(metaclass=Singleton):
     def __init__(self):
+        self.selected_bundle = None
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
         self.device_manager = DeviceManager(DRIVE_PATH)
