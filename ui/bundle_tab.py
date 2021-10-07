@@ -45,17 +45,22 @@ class BundleTab(Tab):
         self.selected_label = Label(self, text="")
         self.selected_label.grid(row=0, column=0, columnspan=2,
                                  padx=1, pady=1, sticky=tk.NW)
+        Separator(self, orientation=OrientModes.Horizontal).grid(
+            row=1, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NSEW)
+        self.downloaded_bundles_label = Label(self, text="Downloaded bundles: ")
+        self.downloaded_bundles_label.grid(row=2, column=0, columnspan=2,
+                                           padx=1, pady=1, sticky=tk.NW)
         self.update_buttons()
         self.update_selected_bundle()
         self.update_bundle_listbox()
-        make_resizable(self, 1, 0)
+        make_resizable(self, 3, 0)
 
     def make_buttons(self):
         """
         Make the buttons.
         """
         self.buttons_frame = Frame(self)
-        self.buttons_frame.grid(row=1, column=1, sticky=tk.NSEW)
+        self.buttons_frame.grid(row=3, column=1, sticky=tk.NSEW)
         self.add_button = Button(self.buttons_frame, text="Add bundle...")
         self.add_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.pop_button = Button(self.buttons_frame, text="Remove bundle")
@@ -117,7 +122,7 @@ class BundleTab(Tab):
         Make the bundle listbox and scrollbar and stuff.
         """
         self.listbox_frame = Frame(self)
-        self.listbox_frame.grid(row=1, column=0, sticky=tk.NSEW)
+        self.listbox_frame.grid(row=3, column=0, sticky=tk.NSEW)
         self.listbox = Listbox(self.listbox_frame, width=50, height=10,
                                on_select=self.update_buttons)
         self.listbox.grid(row=0, column=0, padx=(1, 0), pady=1, sticky=tk.NSEW)
