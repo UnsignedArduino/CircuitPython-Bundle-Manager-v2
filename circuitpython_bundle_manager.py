@@ -21,7 +21,8 @@ else:
 
 
 class CircuitPythonBundleManager(metaclass=Singleton):
-    def __init__(self):
+    def __init__(self, settings: dict):
+        self.settings = settings
         self.selected_bundle = None
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
