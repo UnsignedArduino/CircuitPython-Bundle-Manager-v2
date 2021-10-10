@@ -89,7 +89,7 @@ def make_release_select_frame(gm: GitHubManager,
         download_button.enabled = True
 
     listbox = Listbox(listbox_frame, values=list(values.keys()),
-                      height=10, width=20, on_select=update)
+                      height=10, width=30, on_select=update)
     listbox.grid(row=1, column=0, padx=(1, 0), pady=1, sticky=tk.NSEW)
 
     listbox_scroll = Scrollbar(listbox_frame, widget=listbox)
