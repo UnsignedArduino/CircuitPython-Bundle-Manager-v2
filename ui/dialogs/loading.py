@@ -11,17 +11,18 @@ from helpers.resize import make_resizable
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-def show_deleting(parent, name: str) -> CustomDialog:
+def show_generic(parent, title: str, label: str) -> CustomDialog:
     """
-    Show info about a bundle in a dialog.
+    Show a generic loading dialog.
 
     :param parent: The parent of this window.
-    :param name: The name of the deleted bundle
+    :param title: The title of the dialog.
+    :param label: THe label of the dialog.
     """
     dialog = CustomDialog(parent)
-    dialog.title = f"Removing bundle {name}"
+    dialog.title = title
 
-    title_label = Label(dialog, text=f"Removing bundle {name}...")
+    title_label = Label(dialog, text=label)
     title_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
 
     pb = Progressbar(dialog, length=200, mode=ProgressModes.Indeterminate,
@@ -35,3 +36,35 @@ def show_deleting(parent, name: str) -> CustomDialog:
 
     dialog.grab_focus()
     return dialog
+
+
+def show_deleting(parent, name: str) -> CustomDialog:
+    """
+    Show info about a bundle in a dialog.
+
+    :param parent: The parent of this window.
+    :param name: The name of the deleted bundle
+    """
+    return show_generic(parent, f"Removing bundle {name}",
+                        f"Removing bundle {name}...")
+
+
+def show_get_releases(parent) -> CustomDialog:
+    """
+    Show loading dialog saying that we are getting the releases.
+
+    :param parent: The parent of this window.
+    """
+    return show_generic(parent, f"Getting all releases",
+                        f"Getting releases available to download...")
+
+
+def show_download_release(parent) -> CustomDialog:
+    """
+    Show loading dialog saying that we are downloading the release.
+
+    :param parent: The parent of this window.
+    """
+    return show_generic(parent, f"Downloading release",
+                        f"Downloading release...")
+

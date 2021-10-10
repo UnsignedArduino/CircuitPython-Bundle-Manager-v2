@@ -16,6 +16,7 @@ from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from ui.dialogs.loading import show_deleting
 from ui.dialogs.bundle_info import show_bundle_info
+from ui.dialogs.add_bundle import add_bundle_dialog
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -63,7 +64,8 @@ class BundleTab(Tab):
         """
         self.buttons_frame = Frame(self)
         self.buttons_frame.grid(row=3, column=1, sticky=tk.NSEW)
-        self.add_button = Button(self.buttons_frame, text="Add bundle...")
+        self.add_button = Button(self.buttons_frame, text="Add bundle...",
+                                 command=self.add_bundle)
         self.add_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.pop_button = Button(self.buttons_frame, text="Remove bundle",
                                  command=self.pop_bundle)
@@ -83,6 +85,19 @@ class BundleTab(Tab):
         self.refresh_button = Button(self.buttons_frame, text="Refresh",
                                      command=self.update_bundle_listbox)
         self.refresh_button.grid(row=7, column=0, padx=1, pady=1, sticky=tk.NSEW)
+
+    def add_bundle(self):
+        """
+        Download a new bundle.
+        """
+        try:
+            add_bundle_dialog(self, self.cpybm)
+        except tk.TclError:
+            pass
+        except Exception as e:
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="Error while downloading new bundle!",
+                       detail=str(e))
 
     def pop_bundle(self):
         """
