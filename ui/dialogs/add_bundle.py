@@ -172,12 +172,16 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
     gm = GitHubManager(token, BUNDLE_REPO, BUNDLES_PATH)
     fake_frame = make_release_select_frame(gm, dialog, [])
 
-    loading = show_get_releases(dialog)
+    loading, pb = show_get_releases(dialog)
+
+    def update_pb(got, total):
+        pb.value = got
+        pb.maximum = total
 
     def get_and_select_release():
         if len(cpybm.cached_all_bundles) == 0:
             logger.debug("Did not find release list in memory cache, downloading list")
-            releases = gm.get_bundle_releases()
+            releases = gm.get_bundle_releases(update_pb)
             cpybm.cached_all_bundles = releases
         else:
             logger.debug(f"Found {len(cpybm.cached_all_bundles)} releases in memory cache")

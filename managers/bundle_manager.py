@@ -32,7 +32,6 @@ class Module:
                     Module(self.path.parent / dependency, data)
                 )
         else:
-            logger.warning(f"Could not find metadata for {self.name}!")
             self.is_package = None
             self.pypi_name = None
             self.version = None

@@ -1,5 +1,6 @@
 import logging
 from io import BytesIO
+from typing import Callable
 from json import dumps, loads
 from pathlib import Path
 from zipfile import ZipFile
@@ -30,16 +31,26 @@ class GitHubManager(metaclass=Singleton):
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
 
-    def get_bundle_releases(self) -> list[GitRelease]:
+    def get_bundle_releases(self, pb_func: Callable) -> list[GitRelease]:
         """
         Get all the bundle releases and return a list of them.
 
+        :param pb_func: A function to call to update GUIs, etc. Will be passed
+         2 ints positionally with the first being how far and the second being
+         how much is left.
         :return: A list of github.GitRelease.GitRelease
         """
         logger.debug("Getting repo...")
         repo = self.github.get_repo(self.bundle_repo)
         logger.debug("Getting releases...")
-        return list(repo.get_releases())
+        pag_list = repo.get_releases()
+        releases = []
+        total = pag_list.totalCount
+        for index, item in enumerate(pag_list):
+            pb_func(index, total)
+            releases.append(item)
+        logger.debug(f"Got {len(releases)} GitReleases")
+        return releases
 
     def download_release(self, release: GitRelease):
         """
