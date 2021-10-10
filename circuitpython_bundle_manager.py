@@ -26,6 +26,7 @@ class CircuitPythonBundleManager(metaclass=Singleton):
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
         self.device_manager = DeviceManager(DRIVE_PATH)
+        self.cached_all_bundles = []
 
     def delete_bundle(self, bundle: Bundle):
         """
