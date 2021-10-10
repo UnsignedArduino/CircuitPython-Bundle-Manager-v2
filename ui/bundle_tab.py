@@ -3,7 +3,7 @@ import tkinter as tk
 from threading import Thread
 
 from TkZero.Button import Button
-from TkZero.Dialog import ask_ok_or_cancel, show_error
+from TkZero.Dialog import ask_ok_or_cancel, show_error, show_info
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Listbox import Listbox
@@ -14,9 +14,9 @@ from TkZero.Separator import Separator, OrientModes
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
-from ui.dialogs.loading import show_deleting
-from ui.dialogs.bundle_info import show_bundle_info
 from ui.dialogs.add_bundle import add_bundle_dialog
+from ui.dialogs.bundle_info import show_bundle_info
+from ui.dialogs.loading import show_deleting
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -105,7 +105,8 @@ class BundleTab(Tab):
         """
         Pop the currently selected bundle.
         """
-        bundle = self.cpybm.selected_bundle
+        name = self.listbox.values[self.listbox.selected[0]]
+        bundle = self.bundles[self.listbox.selected[0]]
         if not ask_ok_or_cancel(self, title="CircuitPython Bundle Manager v2: Confirm",
                                 message="Are you sure you want to delete "
                                         "the selected bundle?",
@@ -125,6 +126,9 @@ class BundleTab(Tab):
                 show_error(self, title="CircuitPython Bundle Manager v2: Error!",
                            message="Error while deleting bundle!",
                            detail=str(e))
+            else:
+                show_info(self, title="CircuitPython Bundle Manager v2: Info",
+                          message="Successfully deleted bundle!")
             self.cpybm.selected_bundle = None
             self.listbox_frame.enabled = True
             self.buttons_frame.enabled = True
@@ -199,7 +203,9 @@ class BundleTab(Tab):
         def update():
             self.cpybm.bundle_manager.index_bundles()
             self.bundles = self.cpybm.bundle_manager.bundles
+            self.bundles = sorted(self.bundles, key=lambda b: b.released.timestamp(), reverse=True)
             self.listbox.values = [b.title for b in self.bundles]
+
             self.listbox_frame.enabled = True
             self.buttons_frame.enabled = True
             self.update_buttons()

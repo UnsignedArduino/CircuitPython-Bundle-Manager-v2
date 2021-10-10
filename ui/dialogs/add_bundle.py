@@ -123,6 +123,7 @@ def make_release_select_frame(gm: GitHubManager,
             try:
                 gm.download_release(selected_release)
             except Exception as e:
+                logger.exception("Error while downloading release!")
                 show_error(parent, title="CircuitPython Bundle Manager v2: Error!",
                            message="There was an error downloading the release!",
                            detail=str(e))
