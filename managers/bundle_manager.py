@@ -21,15 +21,23 @@ class Module:
         """
         self.path = path
         self.name = path.name
-        self.is_package = data[self.path.stem]["package"]
-        self.pypi_name = data[self.path.stem]["pypi_name"]
-        self.version = data[self.path.stem]["version"]
-        self.repo = data[self.path.stem]["repo"]
-        self.dependencies = []
-        for dependency in data[self.path.stem]["dependencies"]:
-            self.dependencies.append(
-                Module(self.path.parent / dependency, data)
-            )
+        if len(data) > 0:
+            self.is_package = data[self.path.stem]["package"]
+            self.pypi_name = data[self.path.stem]["pypi_name"]
+            self.version = data[self.path.stem]["version"]
+            self.repo = data[self.path.stem]["repo"]
+            self.dependencies = []
+            for dependency in data[self.path.stem]["dependencies"]:
+                self.dependencies.append(
+                    Module(self.path.parent / dependency, data)
+                )
+        else:
+            logger.warning(f"Could not find metadata for {self.name}!")
+            self.is_package = None
+            self.pypi_name = None
+            self.version = None
+            self.repo = None
+            self.dependencies = []
 
 
 class Bundle:
