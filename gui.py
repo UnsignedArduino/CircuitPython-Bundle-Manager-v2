@@ -59,4 +59,5 @@ class CircuitPythonBundleManagerGUI(MainWindow):
         """
         logger.debug(f"Loading icon from {ICON_PATH}")
         icon = PhotoImage(file=ICON_PATH)
-        self.icon = icon
+        # self.icon = icon
+        self.tk.call("wm", "iconphoto", self, "-default", icon)

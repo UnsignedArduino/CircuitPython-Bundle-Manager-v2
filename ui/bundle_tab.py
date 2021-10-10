@@ -98,6 +98,8 @@ class BundleTab(Tab):
             show_error(self, title="CircuitPython Bundle Manager v2: Error!",
                        message="Error while downloading new bundle!",
                        detail=str(e))
+        finally:
+            self.update_bundle_listbox()
 
     def pop_bundle(self):
         """
