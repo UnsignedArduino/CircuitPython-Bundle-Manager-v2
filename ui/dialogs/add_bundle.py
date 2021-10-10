@@ -29,13 +29,14 @@ class NoTokenError(Exception):
 
 
 def make_release_select_frame(gm: GitHubManager,
-                              parent, releases: list[GitRelease]):
+                              parent, releases: list[GitRelease]) -> Frame:
     """
     Make the release select frame and wait until the user selects one
 
     :param gm: A GitHub manager already initialized.
     :param parent: The parent.
     :param releases: A list of GitReleases.
+    :return: The frame everything was in.
     """
     frame = Frame(parent)
     frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
@@ -145,6 +146,7 @@ def make_release_select_frame(gm: GitHubManager,
     cancel_button = Button(button_frame, text="Close",
                            command=parent.close)
     cancel_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+    return frame
 
 
 def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
@@ -166,11 +168,13 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
 
     make_resizable(dialog, 0, 0)
 
+    token = cpybm.cred_manager.get_github_token()
+    gm = GitHubManager(token, BUNDLE_REPO, BUNDLES_PATH)
+    fake_frame = make_release_select_frame(gm, dialog, [])
+
     loading = show_get_releases(dialog)
 
     def get_and_select_release():
-        token = cpybm.cred_manager.get_github_token()
-        gm = GitHubManager(token, BUNDLE_REPO, BUNDLES_PATH)
         if len(cpybm.cached_all_bundles) == 0:
             logger.debug("Did not find release list in memory cache, downloading list")
             releases = gm.get_bundle_releases()
@@ -179,6 +183,7 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
             logger.debug(f"Found {len(cpybm.cached_all_bundles)} releases in memory cache")
             releases = cpybm.cached_all_bundles
         loading.close()
+        fake_frame.grid_forget()
         make_release_select_frame(gm, dialog, releases)
 
     t = Thread(target=get_and_select_release, daemon=True)
