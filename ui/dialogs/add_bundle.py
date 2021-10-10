@@ -115,14 +115,19 @@ def make_release_select_frame(gm: GitHubManager,
     versions_entry.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
 
     def download():
-        download_dlg = show_download_release(parent)
+        download_dlg, pb, lbl = show_download_release(parent)
+
+        def update_pb(got, total, status):
+            pb.value = got
+            pb.maximum = total
+            lbl.text = status
 
         def actually_download():
             selected_index = listbox.selected[0]
             selected = values[list(values.keys())[selected_index]].title
             selected_release = values[selected]
             try:
-                gm.download_release(selected_release)
+                gm.download_release(selected_release, update_pb)
             except Exception as e:
                 logger.exception("Error while downloading release!")
                 show_error(parent, title="CircuitPython Bundle Manager v2: Error!",
@@ -133,6 +138,7 @@ def make_release_select_frame(gm: GitHubManager,
                            message="Successfully downloaded release!")
             finally:
                 download_dlg.close()
+                parent.grab_set()
 
         t = Thread(target=actually_download)
         logger.debug(f"Starting thread {t}")
@@ -187,6 +193,7 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
             logger.debug(f"Found {len(cpybm.cached_all_bundles)} releases in memory cache")
             releases = cpybm.cached_all_bundles
         loading.close()
+        dialog.grab_set()
         fake_frame.grid_forget()
         make_release_select_frame(gm, dialog, releases)
 

@@ -119,4 +119,9 @@ class BundleManager(metaclass=Singleton):
             if not path.is_dir():
                 continue
             logger.debug(f"Found bundle {path}")
-            self.bundles.append(Bundle(path))
+            try:
+                b = Bundle(path)
+            except FileNotFoundError:
+                logger.exception(f"Skipping over bundle at {path}")
+            else:
+                self.bundles.append(b)

@@ -1,6 +1,7 @@
 import logging
 from io import BytesIO
 from typing import Callable
+from helpers.file_size import ByteSize
 from json import dumps, loads
 from pathlib import Path
 from zipfile import ZipFile
@@ -37,7 +38,7 @@ class GitHubManager(metaclass=Singleton):
 
         :param pb_func: A function to call to update GUIs, etc. Will be passed
          2 ints positionally with the first being how far and the second being
-         how much is left.
+         the total.
         :return: A list of github.GitRelease.GitRelease
         """
         logger.debug("Getting repo...")
@@ -52,11 +53,14 @@ class GitHubManager(metaclass=Singleton):
         logger.debug(f"Got {len(releases)} GitReleases")
         return releases
 
-    def download_release(self, release: GitRelease):
+    def download_release(self, release: GitRelease, pb_func: Callable):
         """
         Download a release into the bundle folder.
 
         :param release: A GitRelease to download from.
+        :param pb_func: A function to call to update GUIs, etc. WIll be passed
+         2 integers and a string positionally with the first being how far,
+         the second being the toital, and the third being a status bar.
         """
         # To test, I used this code: (Make sure you have GitHub token stored in
         # CredentialManager!)
@@ -90,20 +94,45 @@ class GitHubManager(metaclass=Singleton):
         for asset in assets:
             url = asset.browser_download_url
             logger.debug(f"Downloading {url}")
-            response = requests.get(url)
+            response = requests.get(url, stream=True)
             response.raise_for_status()
+            total = int(response.headers["Content-Length"].strip())
+            got = 0
             if url.endswith(".zip"):
                 zip_data = BytesIO()
-                zip_data.write(response.content)
+                for chunk in response.iter_content(chunk_size=1024):
+                    got += len(chunk)
+                    status = f"Downloading ZIP file - " \
+                             f"{str(ByteSize(got))} / " \
+                             f"{str(ByteSize(total))}"
+                    pb_func(got, total, status)
+                    zip_data.write(chunk)
                 logger.debug(f"Extracting zip file")
+                pb_func(1, 1, f"Extracting ZIP file...")
                 with ZipFile(zip_data) as zip_f:
                     zip_f.extractall(path)
+            elif url.endswith(".json"):
+                file_path = path / filename_sanitize(url.split("/")[-1])
+                status = f"Downloading JSON file (" \
+                         f"{str(ByteSize(total))})"
+                pb_func(1, 1, status)
+                file_path.write_bytes(response.content)
             else:
                 file_path = path / filename_sanitize(url.split("/")[-1])
-                file_path.write_bytes(response.content)
+                for chunk in response.iter_content(chunk_size=1024):
+                    got += len(chunk)
+                    status = f"Downloading file - " \
+                             f"{str(ByteSize(got))} / " \
+                             f"{str(ByteSize(total))}"
+                    pb_func(got, total, status)
+                    file_path.write_bytes(chunk)
         bundles = []
         dependencies = {}
-        for thing in path.glob("*"):
+        total = len(list(path.glob("*")))
+        for index, thing in enumerate(path.glob("*")):
+            logger.debug(f"Scanning {thing}")
+            pb_func(index + 1, total, f"Scanning downloaded content... "
+                                      f"({index + 1} / {total})")
             if "mpy" in thing.name or "py" in thing.name and \
                     "examples" not in thing.name and thing.is_dir():
                 logger.debug(f"Found bundle: {thing}")
@@ -115,4 +144,5 @@ class GitHubManager(metaclass=Singleton):
         bundle_metadata["dependencies"] = dependencies
         metadata_path = path / "metadata.json"
         logger.debug(f"Writing metadata to {metadata_path}")
+        pb_func(1, 1, "Writing metadata...")
         metadata_path.write_text(dumps(bundle_metadata, indent=2))
