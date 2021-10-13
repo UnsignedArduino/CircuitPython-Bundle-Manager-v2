@@ -20,10 +20,20 @@ class Drive:
         :param path: A Path to the drive.
         """
         self.path = path
+        self.is_circuitpython = False
+        self.boot_out_path = None
+        self.boot_out_text = None
+        self.code_py_path = None
+        self.code_py_size = None
+        self.boot_py_path = None
+        self.boot_py_size = None
+        self.lib_path = None
+        self.lib_size = None
+        self.installed_modules = []
         self.total_size, self.used_size, self.free_size = (0, 0, 0)
-        self.recalculate_disk_space()
+        self.recalculate_info()
 
-    def recalculate_disk_space(self):
+    def recalculate_info(self):
         """
         (Re)calculate disk space.
         """
@@ -39,16 +49,20 @@ class CircuitPythonDrive(Drive):
         """
         super().__init__(path)
         self.is_circuitpython = True
-        boot_out_path = path / "boot_out.txt"
-        if boot_out_path.exists():
-            self.boot_out_txt = boot_out_path.read_text()
+
+    def recalculate_info(self):
+        super().recalculate_info()
+        self.boot_out_path = self.path / "boot_out.txt"
+        self.boot_out_text = None
+        if self.boot_out_path.exists():
+            self.boot_out_text = self.boot_out_path.read_text()
         else:
-            logger.warning(f"Path {boot_out_path} does not exist, yet is "
+            logger.warning(f"Path {self.boot_out_path} does not exist, yet is "
                            f"initiated as a CircuitPythonDrive!")
         self.code_py_path = None
         self.code_py_size = None
         for name in ("code.txt", "code.py", "main.txt", "main.py"):
-            code_py_path = path / name
+            code_py_path = self.path / name
             if code_py_path.exists():
                 logger.debug(f"Found code.py path at {code_py_path}")
                 self.code_py_path = code_py_path
@@ -57,10 +71,22 @@ class CircuitPythonDrive(Drive):
                 break
         else:
             logger.warning("Unable to find code file!")
+        self.boot_py_path = None
+        self.boot_py_size = None
+        for name in ("settings.txt", "settings.py", "boot.txt", "boot.py"):
+            boot_py_path = self.path / name
+            if boot_py_path.exists():
+                logger.debug(f"Found code.py path at {boot_py_path}")
+                self.boot_py_path = boot_py_path
+                self.boot_py_size = get_size(self.boot_py_path)
+                logger.debug(f"Size of code file is {self.boot_py_size}")
+                break
+        else:
+            logger.warning("Unable to find boot file!")
         self.lib_path = None
         self.lib_size = None
         self.installed_modules = []
-        lib_path = path / "lib"
+        lib_path = self.path / "lib"
         if lib_path.exists() and lib_path.is_dir():
             self.lib_path = lib_path
             logger.debug(f"Found /lib folder at {self.lib_path}")
