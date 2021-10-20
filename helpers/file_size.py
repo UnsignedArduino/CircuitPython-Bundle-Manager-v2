@@ -25,7 +25,7 @@ class ByteSize(int):
             suffix
             for suffix in suffixes
             if 1 < getattr(self, suffix) < self._kiB
-        ), last)
+        ), suffixes[0])
         self.readable = suffix, getattr(self, suffix)
 
         super().__init__()

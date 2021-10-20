@@ -96,19 +96,37 @@ class DriveTab(Tab):
         else:
             self.info_frame.grid()
             self.info_frame.text = f"Info about {selected_drive.path}"
-            if selected_drive.is_circuitpython:
-                self.boot_out_frame.enabled = True
-                self.boot_out_text.read_only = False
-                self.boot_out_text.text = selected_drive.boot_out_text
-                self.boot_out_text.read_only = True
-            else:
-                self.boot_out_text.text = ""
-                self.boot_out_frame.enabled = False
             self.total_storage_label.text = f"Total storage space: " \
                                             f"({str(selected_drive.used_size)}" \
                                             f" / {str(selected_drive.total_size)})"
             self.total_storage_pbar.value = selected_drive.used_size
             self.total_storage_pbar.maximum = selected_drive.total_size
+            if selected_drive.is_circuitpython:
+                self.boot_out_frame.enabled = True
+                self.boot_out_text.read_only = False
+                self.boot_out_text.text = selected_drive.boot_out_text
+                self.boot_out_text.read_only = True
+                if selected_drive.code_py_path is not None and selected_drive.code_py_path.exists():
+                    self.code_storage_label.grid()
+                    self.code_storage_label.text = f"{selected_drive.code_py_path.name}: (" \
+                                                   f"{str(selected_drive.code_py_size)})"
+                    self.code_storage_pbar.grid()
+                    self.code_storage_pbar.value = selected_drive.code_py_size
+                    self.code_storage_pbar.maximum = selected_drive.total_size
+                if selected_drive.boot_py_path is not None and selected_drive.boot_py_path.exists():
+                    self.boot_storage_label.grid()
+                    self.boot_storage_label.text = f"{selected_drive.boot_py_path.name}: (" \
+                                                   f"{str(selected_drive.boot_py_size)})"
+                    self.boot_storage_pbar.grid()
+                    self.boot_storage_pbar.value = selected_drive.boot_py_size
+                    self.boot_storage_pbar.maximum = selected_drive.total_size
+            else:
+                self.code_storage_label.grid_remove()
+                self.code_storage_pbar.grid_remove()
+                self.boot_storage_label.grid_remove()
+                self.boot_storage_pbar.grid_remove()
+                self.boot_out_text.text = ""
+                self.boot_out_frame.enabled = False
 
     def make_info_frame(self):
         """
@@ -146,9 +164,20 @@ class DriveTab(Tab):
         """
         self.storage_frame = Frame(self.info_frame)
         self.storage_frame.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
-        make_resizable(self.storage_frame, rows=1, cols=0)
-        self.total_storage_label = Label(self.storage_frame, text="Total storage space:")
+        make_resizable(self.storage_frame, rows=(1, 3, 5), cols=0)
+        self.total_storage_label = Label(self.storage_frame)
         self.total_storage_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
-        self.total_storage_pbar = Progressbar(self.storage_frame, length=200,
-                                              allow_text=False)
+        self.total_storage_pbar = Progressbar(self.storage_frame, length=200, allow_text=False)
         self.total_storage_pbar.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.code_storage_label = Label(self.storage_frame)
+        self.code_storage_label.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW)
+        self.code_storage_pbar = Progressbar(self.storage_frame, length=200, allow_text=False)
+        self.code_storage_pbar.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.boot_storage_label = Label(self.storage_frame)
+        self.boot_storage_label.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NW)
+        self.boot_storage_pbar = Progressbar(self.storage_frame, length=200, allow_text=False)
+        self.boot_storage_pbar.grid(row=5, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.code_storage_label.grid_remove()
+        self.code_storage_pbar.grid_remove()
+        self.boot_storage_label.grid_remove()
+        self.boot_storage_pbar.grid_remove()
