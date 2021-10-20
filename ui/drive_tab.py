@@ -3,8 +3,11 @@ import tkinter as tk
 
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
+from TkZero.Scrollbar import Scrollbar, OrientModes
 from TkZero.Frame import Frame
 from TkZero.Label import Label
+from TkZero.Labelframe import Labelframe
+from TkZero.Text import Text, TextWrap
 from TkZero.Notebook import Tab, Notebook
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
@@ -37,7 +40,8 @@ class DriveTab(Tab):
         """
         logger.debug("Making GUI for drive tab")
         self.make_select_frame()
-        make_resizable(self, cols=0)
+        make_resizable(self, cols=0, rows=1)
+        self.make_info_frame()
 
     def make_select_frame(self):
         """
@@ -48,7 +52,8 @@ class DriveTab(Tab):
         make_resizable(self.select_frame, 0, 1)
         self.select_label = Label(self.select_frame, text="Selected device: ")
         self.select_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
-        self.select_box = Combobox(self.select_frame, width=20)
+        self.select_box = Combobox(self.select_frame, width=20,
+                                   command=self.update_selected)
         self.update_drives()
         self.select_box.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
         self.select_refresh = Button(self.select_frame, text="Refresh",
@@ -73,3 +78,49 @@ class DriveTab(Tab):
         self.select_box.value = self.select_box.values[0]
         self.select_box.read_only = True
         self.select_frame.enabled = True
+
+    def update_selected(self):
+        """
+        Update the selected device for the info frame.
+        """
+        logger.debug(f"Updating selected drive")
+        try:
+            selected_drive = self.drive_dict[self.select_box.value]
+        except KeyError:
+            return
+        if selected_drive is None:
+            self.info_frame.grid_remove()
+        else:
+            self.info_frame.grid()
+            self.info_frame.text = f"Info about {selected_drive.path}"
+            if selected_drive.is_circuitpython:
+                self.boot_out_frame.enabled = True
+                self.boot_out_text.read_only = False
+                self.boot_out_text.text = selected_drive.boot_out_text
+                self.boot_out_text.read_only = True
+            else:
+                self.boot_out_text.text = ""
+                self.boot_out_frame.enabled = False
+
+    def make_info_frame(self):
+        """
+        Make the info about drive frame.
+        """
+        self.info_frame = Labelframe(self)
+        self.info_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        self.info_frame.grid_remove()
+        make_resizable(self.info_frame, cols=range(0, 2), rows=0)
+        self.boot_out_frame = Frame(self.info_frame)
+        self.boot_out_frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.boot_out_frame, rows=1, cols=0)
+        self.boot_out_label = Label(self.boot_out_frame, text="boot_out.txt:")
+        self.boot_out_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
+        self.boot_out_text = Text(self.boot_out_frame, width=25, height=8,
+                                  wrapping=TextWrap.NoWrapping)
+        self.boot_out_text.read_only = True
+        self.boot_out_text.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        self.boot_out_text_h = Scrollbar(self.boot_out_frame, widget=self.boot_out_text)
+        self.boot_out_text_h.grid(row=1, column=1, padx=1, pady=1)
+        self.boot_out_text_w = Scrollbar(self.boot_out_frame, orientation=OrientModes.Horizontal,
+                                         widget=self.boot_out_text)
+        self.boot_out_text_w.grid(row=2, column=0, padx=1, pady=1)
