@@ -6,8 +6,9 @@ from helpers.create_logger import create_logger
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-def make_resizable(parent, rows: Union[Iterable, int],
-                   cols: Union[Iterable, int], weight: int = 1):
+def make_resizable(parent, rows: Union[Union[Iterable, int], None] = None,
+                   cols: Union[Union[Iterable, int], None] = None,
+                   weight: int = 1):
     """
     Configure the rows and columns to have a weight of 1.
 
@@ -18,12 +19,16 @@ def make_resizable(parent, rows: Union[Iterable, int],
      configure.
     :param weight: The weight to set. Defaults to 1.
     """
-    if isinstance(rows, int):
+    if rows is None:
+        pass
+    elif isinstance(rows, int):
         parent.rowconfigure(rows, weight=weight)
     else:
         for row in rows:
             parent.rowconfigure(row, weight=weight)
-    if isinstance(cols, int):
+    if cols is None:
+        pass
+    elif isinstance(cols, int):
         parent.columnconfigure(cols, weight=weight)
     else:
         for col in cols:
