@@ -3,12 +3,13 @@ import tkinter as tk
 
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
-from TkZero.Scrollbar import Scrollbar, OrientModes
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
-from TkZero.Text import Text, TextWrap
 from TkZero.Notebook import Tab, Notebook
+from TkZero.Progressbar import Progressbar
+from TkZero.Scrollbar import Scrollbar, OrientModes
+from TkZero.Text import Text, TextWrap
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
@@ -88,6 +89,8 @@ class DriveTab(Tab):
             selected_drive = self.drive_dict[self.select_box.value]
         except KeyError:
             return
+        if not hasattr(self, "info_frame"):
+            return
         if selected_drive is None:
             self.info_frame.grid_remove()
         else:
@@ -101,6 +104,11 @@ class DriveTab(Tab):
             else:
                 self.boot_out_text.text = ""
                 self.boot_out_frame.enabled = False
+            self.total_storage_label.text = f"Total storage space: " \
+                                            f"({str(selected_drive.used_size)}" \
+                                            f" / {str(selected_drive.total_size)})"
+            self.total_storage_pbar.value = selected_drive.used_size
+            self.total_storage_pbar.maximum = selected_drive.total_size
 
     def make_info_frame(self):
         """
@@ -110,6 +118,13 @@ class DriveTab(Tab):
         self.info_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.info_frame.grid_remove()
         make_resizable(self.info_frame, cols=range(0, 2), rows=0)
+        self.make_boot_out_frame()
+        self.make_storage_specs_frame()
+
+    def make_boot_out_frame(self):
+        """
+        Make the boot_out.txt frame.
+        """
         self.boot_out_frame = Frame(self.info_frame)
         self.boot_out_frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         make_resizable(self.boot_out_frame, rows=1, cols=0)
@@ -124,3 +139,16 @@ class DriveTab(Tab):
         self.boot_out_text_w = Scrollbar(self.boot_out_frame, orientation=OrientModes.Horizontal,
                                          widget=self.boot_out_text)
         self.boot_out_text_w.grid(row=2, column=0, padx=1, pady=1)
+
+    def make_storage_specs_frame(self):
+        """
+        Make the storage specs frame.
+        """
+        self.storage_frame = Frame(self.info_frame)
+        self.storage_frame.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.storage_frame, rows=1, cols=0)
+        self.total_storage_label = Label(self.storage_frame, text="Total storage space:")
+        self.total_storage_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
+        self.total_storage_pbar = Progressbar(self.storage_frame, length=200,
+                                              allow_text=False)
+        self.total_storage_pbar.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)

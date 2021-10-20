@@ -7,7 +7,7 @@ from typing import Union
 from helpers.create_logger import create_logger
 from helpers.operating_system import on_windows
 from helpers.singleton import Singleton
-from helpers.file_size import get_size
+from helpers.file_size import get_size, ByteSize
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -38,6 +38,9 @@ class Drive:
         (Re)calculate disk space.
         """
         self.total_size, self.used_size, self.free_size = disk_usage(self.path)
+        self.total_size = ByteSize(self.total_size)
+        self.used_size = ByteSize(self.used_size)
+        self.free_size = ByteSize(self.free_size)
 
 
 class CircuitPythonDrive(Drive):
