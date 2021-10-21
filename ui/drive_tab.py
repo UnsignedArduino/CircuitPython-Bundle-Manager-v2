@@ -94,6 +94,8 @@ class DriveTab(Tab):
         if selected_drive is None:
             self.info_frame.grid_remove()
         else:
+            logger.debug(f"Selected drive is {selected_drive} ({selected_drive.path})")
+            self.cpybm.selected_drive = selected_drive
             self.info_frame.grid()
             self.info_frame.text = f"Info about {selected_drive.path}"
             self.total_storage_label.text = f"Total storage space: " \
