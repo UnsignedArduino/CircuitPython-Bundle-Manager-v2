@@ -92,6 +92,8 @@ class DriveTab(Tab):
         if not hasattr(self, "info_frame"):
             return
         if selected_drive is None:
+            logger.debug("Selected drive is None")
+            self.cpybm.selected_drive = None
             self.info_frame.grid_remove()
         else:
             logger.debug(f"Selected drive is {selected_drive} ({selected_drive.path})")
