@@ -2,7 +2,9 @@ import logging
 import tkinter as tk
 
 from TkZero.Labelframe import Labelframe
+from TkZero.Listbox import Listbox
 from TkZero.Notebook import Tab, Notebook
+from TkZero.Scrollbar import Scrollbar, OrientModes
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
@@ -52,6 +54,15 @@ class ModulesTab(Tab):
         """
         self.bundle_modules_frame = Labelframe(self, text="Modules in selected bundle")
         self.bundle_modules_frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.bundle_modules_frame, rows=0, cols=0)
+        self.bundle_modules_listbox = Listbox(self.bundle_modules_frame, width=20, height=10)
+        self.bundle_modules_listbox.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        self.bundle_modules_vscroll = Scrollbar(self.bundle_modules_frame, widget=self.bundle_modules_listbox)
+        self.bundle_modules_vscroll.grid(row=0, column=1, padx=1, pady=1)
+        self.bundle_modules_hscroll = Scrollbar(self.bundle_modules_frame,
+                                                orientation=OrientModes.Horizontal,
+                                                widget=self.bundle_modules_listbox)
+        self.bundle_modules_hscroll.grid(row=1, column=0, padx=1, pady=1)
 
     def update_bundle_modules(self):
         """
@@ -69,6 +80,15 @@ class ModulesTab(Tab):
         """
         self.device_modules_frame = Labelframe(self, text="Modules installed in selected device")
         self.device_modules_frame.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.device_modules_frame, rows=0, cols=0)
+        self.device_modules_listbox = Listbox(self.device_modules_frame, width=20, height=10)
+        self.device_modules_listbox.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        self.device_modules_vscroll = Scrollbar(self.device_modules_frame, widget=self.device_modules_listbox)
+        self.device_modules_vscroll.grid(row=0, column=1, padx=1, pady=1)
+        self.device_modules_hscroll = Scrollbar(self.device_modules_frame,
+                                                orientation=OrientModes.Horizontal,
+                                                widget=self.device_modules_listbox)
+        self.device_modules_hscroll.grid(row=1, column=0, padx=1, pady=1)
 
     def update_device_modules(self):
         """
