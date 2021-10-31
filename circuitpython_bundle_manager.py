@@ -7,6 +7,7 @@ from helpers.singleton import Singleton
 from managers.bundle_manager import BundleManager, Bundle
 from managers.credential_manager import CredentialManager
 from managers.device_manager import DeviceManager
+from managers.device_manager import Drive
 
 SERVICE_NAME = "CircuitPython Bundle Manager v2"
 GITHUB_TOKEN_NAME = "github_token"
@@ -23,8 +24,10 @@ else:
 class CircuitPythonBundleManager(metaclass=Singleton):
     def __init__(self, settings: dict):
         self.settings = settings
-        self.selected_bundle = None
-        self.selected_drive = None
+        self._selected_bundle = None
+        self.on_new_selected_bundle = lambda: None
+        self._selected_drive = None
+        self.on_new_selected_drive = lambda: None
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
         self.device_manager = DeviceManager(DRIVE_PATH)
@@ -40,3 +43,41 @@ class CircuitPythonBundleManager(metaclass=Singleton):
         path = bundle.path
         logging.debug(f"Path is {path}")
         rmtree(path)
+
+    @property
+    def selected_bundle(self) -> Bundle:
+        """
+        Get the currently selected bundle.
+
+        :return: A Bundle.
+        """
+        return self._selected_bundle
+
+    @selected_bundle.setter
+    def selected_bundle(self, new_bundle: Bundle):
+        """
+        Set the currently selected bundle.
+
+        :param new_bundle: A Bundle.
+        """
+        self._selected_bundle = new_bundle
+        self.on_new_selected_bundle()
+
+    @property
+    def selected_drive(self) -> Drive:
+        """
+        Get the currently selected bundle.
+
+        :return: A Drive.
+        """
+        return self._selected_drive
+
+    @selected_drive.setter
+    def selected_drive(self, new_drive: Drive):
+        """
+        Set the currently selected bundle.
+
+        :param new_drive: A Drive.
+        """
+        self._selected_drive = new_drive
+        self.on_new_selected_drive()
