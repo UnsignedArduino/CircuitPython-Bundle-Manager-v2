@@ -1,5 +1,6 @@
 import logging
 import tkinter as tk
+from typing import Callable
 import webbrowser
 
 from TkZero.Button import Button
@@ -44,6 +45,19 @@ class DriveTab(Tab):
         self.make_select_frame()
         make_resizable(self, cols=0, rows=1)
         self.make_info_frame()
+        self.update_drives()
+        self.select_box.read_only = False
+        if self.cpybm.data_manager.has_key("last_selected_drive"):
+            selected = self.cpybm.data_manager.get_key("last_selected_drive")
+            if selected in self.select_box.values:
+                self.select_box.value = selected
+                return
+            selected += " (CircuitPython drive)"
+            if selected in self.select_box.values:
+                self.select_box.value = selected
+                return
+        self.select_box.read_only = True
+        self.update_selected()
 
     def open_selected_drive(self):
         """
@@ -74,9 +88,11 @@ class DriveTab(Tab):
         self.select_open.enabled = False
         self.update_drives()
 
-    def update_drives(self):
+    def update_drives(self, on_finish: Callable = lambda: None):
         """
         Update all connected drives.
+
+        :param on_finish: The function to run when this finishes.
         """
         logger.debug("Updating connected drives")
         self.select_frame.enabled = False
@@ -90,6 +106,7 @@ class DriveTab(Tab):
             self.drive_dict[str(drive.path)] = drive
         self.select_box.values = self.drive_dict.keys()
         self.select_box.value = self.select_box.values[0]
+        on_finish()
         self.select_box.read_only = True
         self.select_frame.enabled = True
         self.select_open.enabled = False
@@ -100,11 +117,11 @@ class DriveTab(Tab):
         """
         logger.debug(f"Updating selected drive")
         self.select_open.enabled = False
-        try:
-            selected_drive = self.drive_dict[self.select_box.value]
-        except KeyError:
+        if self.select_box.value not in self.drive_dict:
             return
+        selected_drive = self.drive_dict[self.select_box.value]
         if not hasattr(self, "info_frame"):
+            logger.debug("Cannot show selected device info since widgets don't exist yet!")
             return
         if selected_drive is None:
             logger.debug("Selected drive is None")
@@ -113,6 +130,7 @@ class DriveTab(Tab):
         else:
             logger.debug(f"Selected drive is {selected_drive} ({selected_drive.path})")
             self.cpybm.selected_drive = selected_drive
+            self.cpybm.data_manager.set_key("last_selected_drive", str(selected_drive.path))
             self.info_frame.grid()
             self.info_frame.text = f"Info about {selected_drive.path}"
             self.total_storage_label.text = f"Total storage space: " \
