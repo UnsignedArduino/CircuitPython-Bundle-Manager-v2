@@ -224,6 +224,20 @@ class ModulesTab(Tab):
                 logger.debug(f"Module {module_selected} is in currently selected bundle version!")
                 self.update_button.enabled = True
 
+    def enable_everything(self, en: bool = True):
+        """
+        Enable (or disable) everything on this tab.
+
+        :param en: Whether to enable or disable everything.
+        """
+        self.bundle_modules_frame.enabled = en
+        self.bundle_listbox_frame.enabled = en
+        self.device_modules_frame.enabled = en
+        self.bundle_version_frame.enabled = en
+        self.stuff_frame.enabled = en
+        if en:
+            self.update_do_stuff_buttons()
+
     def install_module(self):
         """
         Install the selected module.
@@ -231,6 +245,7 @@ class ModulesTab(Tab):
         target_name = self.bundle_modules_listbox.values[self.bundle_modules_listbox.selected[0]]
         target = self.string_to_module[target_name]
         logger.debug(f"Installing module {target} ({target_name})")
+        self.enable_everything(False)
         dialog = loading.show_installing(self, target_name)
 
         def install():
@@ -245,6 +260,7 @@ class ModulesTab(Tab):
                           message=f"Successfully installed module {target_name}!")
             finally:
                 dialog.destroy()
+                self.enable_everything()
             self.cpybm.selected_drive.recalculate_info()
             self.update_device_modules()
 
@@ -258,6 +274,7 @@ class ModulesTab(Tab):
         """
         target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
         logger.debug(f"Reinstalling module {target_name}")
+        self.enable_everything(False)
         dialog = loading.show_reinstalling(self, target_name)
 
         def update():
@@ -275,6 +292,7 @@ class ModulesTab(Tab):
                           message=f"Successfully reinstalled module {target_name}!")
             finally:
                 dialog.destroy()
+                self.enable_everything()
             self.cpybm.selected_drive.recalculate_info()
             self.update_device_modules()
 
@@ -288,6 +306,7 @@ class ModulesTab(Tab):
         """
         target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
         logger.debug(f"Uninstalling module {target_name}")
+        self.enable_everything(False)
         dialog = loading.show_uninstalling(self, target_name)
 
         def uninstall():
@@ -302,6 +321,7 @@ class ModulesTab(Tab):
                           message=f"Successfully uninstalled module {target_name}!")
             finally:
                 dialog.destroy()
+                self.enable_everything()
             self.cpybm.selected_drive.recalculate_info()
             self.update_device_modules()
 
