@@ -198,7 +198,9 @@ class ModulesTab(Tab):
         self.install_button.enabled = False
         self.update_button.enabled = False
         self.uninstall_button.enabled = False
-        if len(self.bundle_modules_listbox.selected) > 0:
+        if len(self.bundle_modules_listbox.selected) > 0 and \
+                self.cpybm.selected_drive is not None and \
+                self.cpybm.selected_drive.is_circuitpython:
             self.install_button.enabled = True
             return
         if len(self.device_modules_listbox.selected) > 0:
