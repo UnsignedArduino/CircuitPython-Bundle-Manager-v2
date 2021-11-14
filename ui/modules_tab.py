@@ -99,8 +99,11 @@ class ModulesTab(Tab):
         logger.debug("Updating modules in bundle")
         if self.bundle_version_combox.value == "":
             return
+        version = self.bundle_version_combox.value
+        logger.debug(f"Selected version is {version}")
+        self.cpybm.data_manager.set_key("last_selected_version", version)
         search = self.search_entry.value
-        bundle = self.string_to_bundle[self.bundle_version_combox.value]
+        bundle = self.string_to_bundle[version]
         self.string_to_module = {}
         modules = []
         for name, module in bundle.items():
@@ -125,7 +128,11 @@ class ModulesTab(Tab):
                 self.string_to_bundle[version] = bundle
             self.bundle_version_combox.read_only = False
             self.bundle_version_combox.values = self.string_to_bundle.keys()
-            self.bundle_version_combox.value = self.bundle_version_combox.values[0]
+            if self.cpybm.data_manager.has_key("last_selected_version") and \
+                self.cpybm.data_manager.get_key("last_selected_version") in self.bundle_version_combox.values:
+                self.bundle_version_combox.value = self.cpybm.data_manager.get_key("last_selected_version")
+            else:
+                self.bundle_version_combox.value = self.bundle_version_combox.values[0]
             self.bundle_version_combox.read_only = True
         else:
             self.bundle_modules_frame.text = "Modules in selected bundle"
