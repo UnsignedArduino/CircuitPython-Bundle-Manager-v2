@@ -137,7 +137,7 @@ def make_release_select_frame(gm: GitHubManager,
                 show_info(parent, title="CircuitPython Bundle Manager v2: Error!",
                            message="Successfully downloaded release!")
             finally:
-                download_dlg.close()
+                download_dlg.destroy()
                 parent.grab_set()
 
         t = Thread(target=actually_download)
