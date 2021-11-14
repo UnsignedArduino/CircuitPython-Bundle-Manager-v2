@@ -25,4 +25,5 @@ with many more fixes and features!
 
 ## License
 
-> TODO: Finish!
+This project is distributed under the `GNU General Public License v3.0` 
+license. See the [`LICENSE`](LICENSE) file for the full license. 
