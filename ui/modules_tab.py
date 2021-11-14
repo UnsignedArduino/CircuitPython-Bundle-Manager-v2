@@ -239,6 +239,19 @@ class ModulesTab(Tab):
         """
         Uninstall the selected module.
         """
+        target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
+        logger.debug(f"Uninstalling module {target_name}")
+        try:
+            self.cpybm.selected_drive.uninstall_module(target_name)
+        except Exception as e:
+            show_error(self, title="CircuitPython Bundle Manager: Error!",
+                       message=f"Failed to uninstall module {target_name}!",
+                       detail=str(e))
+        else:
+            show_info(self, title="CircuitPython Bundle Manager: Info",
+                      message=f"Successfully uninstalled module {target_name}!")
+        self.cpybm.selected_drive.recalculate_info()
+        self.update_device_modules()
 
     def make_do_stuff_buttons(self):
         """
