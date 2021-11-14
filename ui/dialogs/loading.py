@@ -105,13 +105,46 @@ def show_determinate_with_label(parent, title: str, label: str,
 
 def show_deleting(parent, name: str) -> CustomDialog:
     """
-    Show info about a bundle in a dialog.
+    Show loading dialog saying that we are deleting a bundle.
 
     :param parent: The parent of this window.
-    :param name: The name of the deleted bundle
+    :param name: The name of the deleted bundle.
     """
     return show_indeterminate(parent, f"Removing bundle {name}",
                               f"Removing bundle {name}...")
+
+
+def show_installing(parent, name: str) -> CustomDialog:
+    """
+    Show loading dialog saying that we are installing a module.
+
+    :param parent: The parent of this window.
+    :param name: The name of the installing module.
+    """
+    return show_indeterminate(parent, f"Installing module {name}",
+                              f"Installing module {name}...")
+
+
+def show_uninstalling(parent, name: str) -> CustomDialog:
+    """
+    Show loading dialog saying that we are uninstalling a module.
+
+    :param parent: The parent of this window.
+    :param name: The name of the uninstalling module.
+    """
+    return show_indeterminate(parent, f"Uninstalling module {name}",
+                              f"Uninstalling module {name}...")
+
+
+def show_reinstalling(parent, name: str) -> CustomDialog:
+    """
+    Show loading dialog saying that we are reinstalling a module.
+
+    :param parent: The parent of this window.
+    :param name: The name of the reinstalling module.
+    """
+    return show_indeterminate(parent, f"Reinstalling module {name}",
+                              f"Reinstalling module {name}...")
 
 
 def show_get_releases(parent, on_close: Callable) -> tuple[CustomDialog, Progressbar]:

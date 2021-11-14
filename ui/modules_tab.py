@@ -1,6 +1,7 @@
 import logging
 import tkinter as tk
 
+from threading import Thread
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
 from TkZero.Dialog import show_info, show_error
@@ -13,6 +14,7 @@ from TkZero.Scrollbar import Scrollbar, OrientModes
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
+from ui.dialogs import loading
 from helpers.resize import make_resizable
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
@@ -218,17 +220,26 @@ class ModulesTab(Tab):
         target_name = self.bundle_modules_listbox.values[self.bundle_modules_listbox.selected[0]]
         target = self.string_to_module[target_name]
         logger.debug(f"Installing module {target} ({target_name})")
-        try:
-            self.cpybm.selected_drive.install_module(target)
-        except Exception as e:
-            show_error(self, title="CircuitPython Bundle Manager: Error!",
-                       message=f"Failed to install module {target_name}!",
-                       detail=str(e))
-        else:
-            show_info(self, title="CircuitPython Bundle Manager: Info",
-                      message=f"Successfully installed module {target_name}!")
-        self.cpybm.selected_drive.recalculate_info()
-        self.update_device_modules()
+        dialog = loading.show_installing(self, target_name)
+
+        def install():
+            try:
+                self.cpybm.selected_drive.install_module(target)
+            except Exception as e:
+                show_error(self, title="CircuitPython Bundle Manager: Error!",
+                           message=f"Failed to install module {target_name}!",
+                           detail=str(e))
+            else:
+                show_info(self, title="CircuitPython Bundle Manager: Info",
+                          message=f"Successfully installed module {target_name}!")
+            finally:
+                dialog.destroy()
+            self.cpybm.selected_drive.recalculate_info()
+            self.update_device_modules()
+
+        t = Thread(target=install, daemon=True)
+        logger.debug(f"Starting thread {t}")
+        t.start()
 
     def update_module(self):
         """
@@ -236,20 +247,29 @@ class ModulesTab(Tab):
         """
         target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
         logger.debug(f"Reinstalling module {target_name}")
-        try:
-            self.cpybm.selected_drive.uninstall_module(target_name)
-            target = self.string_to_module[target_name]
-            logger.debug(f"Installing module {target} ({target_name})")
-            self.cpybm.selected_drive.install_module(target)
-        except Exception as e:
-            show_error(self, title="CircuitPython Bundle Manager: Error!",
-                       message=f"Failed to reinstall module {target_name}!",
-                       detail=str(e))
-        else:
-            show_info(self, title="CircuitPython Bundle Manager: Info",
-                      message=f"Successfully reinstalled module {target_name}!")
-        self.cpybm.selected_drive.recalculate_info()
-        self.update_device_modules()
+        dialog = loading.show_reinstalling(self, target_name)
+
+        def update():
+            try:
+                self.cpybm.selected_drive.uninstall_module(target_name)
+                target = self.string_to_module[target_name]
+                logger.debug(f"Installing module {target} ({target_name})")
+                self.cpybm.selected_drive.install_module(target)
+            except Exception as e:
+                show_error(self, title="CircuitPython Bundle Manager: Error!",
+                           message=f"Failed to reinstall module {target_name}!",
+                           detail=str(e))
+            else:
+                show_info(self, title="CircuitPython Bundle Manager: Info",
+                          message=f"Successfully reinstalled module {target_name}!")
+            finally:
+                dialog.destroy()
+            self.cpybm.selected_drive.recalculate_info()
+            self.update_device_modules()
+
+        t = Thread(target=update, daemon=True)
+        logger.debug(f"Starting thread {t}")
+        t.start()
 
     def uninstall_module(self):
         """
@@ -257,17 +277,26 @@ class ModulesTab(Tab):
         """
         target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
         logger.debug(f"Uninstalling module {target_name}")
-        try:
-            self.cpybm.selected_drive.uninstall_module(target_name)
-        except Exception as e:
-            show_error(self, title="CircuitPython Bundle Manager: Error!",
-                       message=f"Failed to uninstall module {target_name}!",
-                       detail=str(e))
-        else:
-            show_info(self, title="CircuitPython Bundle Manager: Info",
-                      message=f"Successfully uninstalled module {target_name}!")
-        self.cpybm.selected_drive.recalculate_info()
-        self.update_device_modules()
+        dialog = loading.show_uninstalling(self, target_name)
+
+        def uninstall():
+            try:
+                self.cpybm.selected_drive.uninstall_module(target_name)
+            except Exception as e:
+                show_error(self, title="CircuitPython Bundle Manager: Error!",
+                           message=f"Failed to uninstall module {target_name}!",
+                           detail=str(e))
+            else:
+                show_info(self, title="CircuitPython Bundle Manager: Info",
+                          message=f"Successfully uninstalled module {target_name}!")
+            finally:
+                dialog.destroy()
+            self.cpybm.selected_drive.recalculate_info()
+            self.update_device_modules()
+
+        t = Thread(target=uninstall, daemon=True)
+        logger.debug(f"Starting thread {t}")
+        t.start()
 
     def make_do_stuff_buttons(self):
         """
