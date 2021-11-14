@@ -63,7 +63,7 @@ class ModulesTab(Tab):
         self.no_bundle_label.enabled = False
         self.no_bundle_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
         self.no_bundle_label.grid_remove()
-        self.bundle_modules_listbox = Listbox(self.bundle_modules_frame, width=20, height=10)
+        self.bundle_modules_listbox = Listbox(self.bundle_modules_frame, width=20, height=10, on_select=self.update_do_stuff_buttons)
         self.bundle_modules_listbox.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.bundle_modules_vscroll = Scrollbar(self.bundle_modules_frame, widget=self.bundle_modules_listbox)
         self.bundle_modules_vscroll.grid(row=0, column=1, padx=1, pady=1)
@@ -142,7 +142,7 @@ class ModulesTab(Tab):
         self.not_cpy_device_label.enabled = False
         self.not_cpy_device_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
         self.not_cpy_device_label.grid_remove()
-        self.device_modules_listbox = Listbox(self.device_modules_frame, width=20, height=10)
+        self.device_modules_listbox = Listbox(self.device_modules_frame, width=20, height=10, on_select=self.update_do_stuff_buttons)
         self.device_modules_listbox.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         self.device_modules_vscroll = Scrollbar(self.device_modules_frame, widget=self.device_modules_listbox)
         self.device_modules_vscroll.grid(row=0, column=1, padx=1, pady=1)
@@ -190,6 +190,24 @@ class ModulesTab(Tab):
             self.device_modules_vscroll.grid_remove()
             self.device_modules_hscroll.grid_remove()
 
+    def update_do_stuff_buttons(self):
+        """
+        Update the do stuff buttons.
+        """
+        logger.debug("Updating do stuff buttons")
+        self.install_button.enabled = False
+        self.update_button.enabled = False
+        self.uninstall_button.enabled = False
+        if len(self.bundle_modules_listbox.selected) > 0:
+            self.install_button.enabled = True
+            return
+        if len(self.device_modules_listbox.selected) > 0:
+            self.uninstall_button.enabled = True
+            module_selected = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
+            if module_selected in self.string_to_module:
+                logger.debug(f"Module {module_selected} is in currently selected bundle version!")
+                self.update_button.enabled = True
+
     def make_do_stuff_buttons(self):
         """
         Make the buttons that do stuff. (like install, uninstall)
@@ -203,3 +221,4 @@ class ModulesTab(Tab):
         self.update_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
         self.uninstall_button = Button(self.stuff_frame, text="Uninstall module")
         self.uninstall_button.grid(row=0, column=2, padx=1, pady=1, sticky=tk.NSEW)
+        self.update_do_stuff_buttons()
