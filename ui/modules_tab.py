@@ -76,7 +76,7 @@ class ModulesTab(Tab):
         self.bundle_version_frame.grid(row=2, column=0, columnspan=1, padx=1, pady=1, sticky=tk.NSEW)
         self.bundle_version_label = Label(self.bundle_version_frame, text="Bundle version:")
         self.bundle_version_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.SW)
-        self.bundle_version_combox = Combobox(self.bundle_version_frame)
+        self.bundle_version_combox = Combobox(self.bundle_version_frame, command=self.update_modules_in_bundle)
         self.bundle_version_combox.read_only = True
         self.bundle_version_combox.grid(row=0, column=1, padx=1, pady=1, sticky=tk.SW + tk.E)
         self.no_bundle_label.grid()
@@ -84,6 +84,21 @@ class ModulesTab(Tab):
         self.bundle_modules_vscroll.grid_remove()
         self.bundle_modules_hscroll.grid_remove()
         self.bundle_version_frame.grid_remove()
+
+    def update_modules_in_bundle(self):
+        """
+        Update the modules specifically in the bundle modules listbox.
+        """
+        logger.debug("Updating modules in bundle")
+        if self.bundle_version_combox.value == "":
+            return
+        bundle = self.string_to_bundle[self.bundle_version_combox.value]
+        self.string_to_module = {}
+        modules = []
+        for name, module in bundle.items():
+            self.string_to_module[name] = module
+            modules.append(name)
+        self.bundle_modules_listbox.values = modules
 
     def update_bundle_modules(self):
         """
