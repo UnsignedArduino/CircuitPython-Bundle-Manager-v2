@@ -2,6 +2,7 @@ import logging
 import tkinter as tk
 
 from TkZero.Button import Button
+from TkZero.Combobox import Combobox
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
@@ -70,10 +71,19 @@ class ModulesTab(Tab):
                                                 orientation=OrientModes.Horizontal,
                                                 widget=self.bundle_modules_listbox)
         self.bundle_modules_hscroll.grid(row=1, column=0, padx=1, pady=1)
+        self.bundle_version_frame = Frame(self.bundle_modules_frame)
+        make_resizable(self.bundle_version_frame, rows=0, cols=1)
+        self.bundle_version_frame.grid(row=2, column=0, columnspan=1, padx=1, pady=1, sticky=tk.NSEW)
+        self.bundle_version_label = Label(self.bundle_version_frame, text="Bundle version:")
+        self.bundle_version_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.SW)
+        self.bundle_version_combox = Combobox(self.bundle_version_frame)
+        self.bundle_version_combox.read_only = True
+        self.bundle_version_combox.grid(row=0, column=1, padx=1, pady=1, sticky=tk.SW + tk.E)
         self.no_bundle_label.grid()
         self.bundle_modules_listbox.grid_remove()
         self.bundle_modules_vscroll.grid_remove()
         self.bundle_modules_hscroll.grid_remove()
+        self.bundle_version_frame.grid_remove()
 
     def update_bundle_modules(self):
         """
@@ -86,12 +96,21 @@ class ModulesTab(Tab):
             self.bundle_modules_listbox.grid()
             self.bundle_modules_vscroll.grid()
             self.bundle_modules_hscroll.grid()
+            self.bundle_version_frame.grid()
+            self.string_to_bundle = {}
+            for version, bundle in self.cpybm.selected_bundle.bundle.items():
+                self.string_to_bundle[version] = bundle
+            self.bundle_version_combox.read_only = False
+            self.bundle_version_combox.values = self.string_to_bundle.keys()
+            self.bundle_version_combox.value = self.bundle_version_combox.values[0]
+            self.bundle_version_combox.read_only = True
         else:
             self.bundle_modules_frame.text = "Modules in selected bundle"
             self.no_bundle_label.grid()
             self.bundle_modules_listbox.grid_remove()
             self.bundle_modules_vscroll.grid_remove()
             self.bundle_modules_hscroll.grid_remove()
+            self.bundle_version_frame.grid_remove()
 
     def make_device_modules_frame(self):
         """
