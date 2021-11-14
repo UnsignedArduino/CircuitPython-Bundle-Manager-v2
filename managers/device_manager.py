@@ -1,5 +1,5 @@
 import logging
-from shutil import disk_usage
+from shutil import disk_usage, copy2, copytree, rmtree
 from pathlib import Path
 from string import ascii_uppercase
 from typing import Union
@@ -7,6 +7,7 @@ from typing import Union
 from helpers.create_logger import create_logger
 from helpers.operating_system import on_windows
 from helpers.singleton import Singleton
+from managers.bundle_manager import Module
 from helpers.file_size import get_size, ByteSize
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
@@ -41,6 +42,33 @@ class Drive:
         self.total_size = ByteSize(self.total_size)
         self.used_size = ByteSize(self.used_size)
         self.free_size = ByteSize(self.free_size)
+
+    def install_module(self, module: Module):
+        """
+        Install the module to this device. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to install.
+        """
+        raise NotImplementedError
+
+    def update_module(self, module: str):
+        """
+        Update the module in lib. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to update.
+        """
+        raise NotImplementedError
+
+    def uninstall_module(self, module: str):
+        """
+        Uninstall the module in lib. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to uninstall.
+        """
+        raise NotImplementedError
 
 
 class CircuitPythonDrive(Drive):
@@ -100,6 +128,45 @@ class CircuitPythonDrive(Drive):
                 self.installed_modules.append(path.name)
         else:
             logger.warning(f"Unable to find {lib_path}!")
+
+    def install_module(self, module: Module):
+        """
+        Install the module to this device. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to install.
+        """
+        logger.debug(f"Installing module {module} ({module.name})")
+        if module.path.is_file():
+            copy2(module.path, self.lib_path)
+        else:
+            copytree(module.path, self.lib_path / module.path.name)
+
+    def update_module(self, module: str):
+        """
+        Update the module in lib. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to update.
+        """
+        logger.debug(f"Updating module {module}")
+        raise NotImplementedError
+
+    def uninstall_module(self, module: str):
+        """
+        Uninstall the module in lib. Will raise NotImplementedError if
+        this is not a CircuitPython drive.
+
+        :param module: The module to uninstall.
+        """
+        logger.debug(f"Uninstalling module {module}")
+        module_path = self.lib_path / module
+        if not module_path.exists():
+            raise FileNotFoundError(f"Could not find {module} to uninstall!")
+        if module_path.is_file():
+            module_path.unlink()
+        else:
+            rmtree(module_path)
 
 
 class DeviceManager(metaclass=Singleton):

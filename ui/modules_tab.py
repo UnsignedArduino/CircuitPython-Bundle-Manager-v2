@@ -3,6 +3,7 @@ import tkinter as tk
 
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
+from TkZero.Dialog import show_info, show_error
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
@@ -210,6 +211,35 @@ class ModulesTab(Tab):
                 logger.debug(f"Module {module_selected} is in currently selected bundle version!")
                 self.update_button.enabled = True
 
+    def install_module(self):
+        """
+        Install the selected module.
+        """
+        target_name = self.bundle_modules_listbox.values[self.bundle_modules_listbox.selected[0]]
+        target = self.string_to_module[target_name]
+        logger.debug(f"Installing module {target} ({target_name})")
+        try:
+            self.cpybm.selected_drive.install_module(target)
+        except Exception as e:
+            show_error(self, title="CircuitPython Bundle Manager: Error!",
+                       message=f"Failed to install module {target_name}!",
+                       detail=str(e))
+        else:
+            show_info(self, title="CircuitPython Bundle Manager: Info",
+                      message=f"Successfully installed module {target_name}!")
+        self.cpybm.selected_drive.recalculate_info()
+        self.update_device_modules()
+
+    def update_module(self):
+        """
+        Update the selected module.
+        """
+
+    def uninstall_module(self):
+        """
+        Uninstall the selected module.
+        """
+
     def make_do_stuff_buttons(self):
         """
         Make the buttons that do stuff. (like install, uninstall)
@@ -217,10 +247,10 @@ class ModulesTab(Tab):
         self.stuff_frame = Frame(self)
         self.stuff_frame.grid(row=1, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NSEW)
         make_resizable(self.stuff_frame, rows=0, cols=range(0, 3))
-        self.install_button = Button(self.stuff_frame, text="Install module")
+        self.install_button = Button(self.stuff_frame, text="Install module", command=self.install_module)
         self.install_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.update_button = Button(self.stuff_frame, text="Update module")
+        self.update_button = Button(self.stuff_frame, text="Update module", command=self.update_module)
         self.update_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
-        self.uninstall_button = Button(self.stuff_frame, text="Uninstall module")
+        self.uninstall_button = Button(self.stuff_frame, text="Uninstall module", command=self.uninstall_module)
         self.uninstall_button.grid(row=0, column=2, padx=1, pady=1, sticky=tk.NSEW)
         self.update_do_stuff_buttons()
