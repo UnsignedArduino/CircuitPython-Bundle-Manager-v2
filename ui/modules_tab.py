@@ -156,6 +156,13 @@ class ModulesTab(Tab):
         self.device_modules_vscroll.grid_remove()
         self.device_modules_hscroll.grid_remove()
 
+    def update_modules_in_device(self):
+        """
+        Update the modules specifically on the device.
+        """
+        logger.debug("Updating modules on device")
+        self.device_modules_listbox.values = self.cpybm.selected_drive.installed_modules
+
     def update_device_modules(self):
         """
         Update the device modules.
@@ -169,6 +176,7 @@ class ModulesTab(Tab):
             self.device_modules_listbox.grid()
             self.device_modules_vscroll.grid()
             self.device_modules_hscroll.grid()
+            self.update_modules_in_device()
         else:
             if self.cpybm.selected_drive is None:
                 self.no_device_label.grid()
