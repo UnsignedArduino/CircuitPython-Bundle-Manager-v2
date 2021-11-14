@@ -52,15 +52,6 @@ class Drive:
         """
         raise NotImplementedError
 
-    def update_module(self, module: str):
-        """
-        Update the module in lib. Will raise NotImplementedError if
-        this is not a CircuitPython drive.
-
-        :param module: The module to update.
-        """
-        raise NotImplementedError
-
     def uninstall_module(self, module: str):
         """
         Uninstall the module in lib. Will raise NotImplementedError if
@@ -141,16 +132,6 @@ class CircuitPythonDrive(Drive):
             copy2(module.path, self.lib_path)
         else:
             copytree(module.path, self.lib_path / module.path.name)
-
-    def update_module(self, module: str):
-        """
-        Update the module in lib. Will raise NotImplementedError if
-        this is not a CircuitPython drive.
-
-        :param module: The module to update.
-        """
-        logger.debug(f"Updating module {module}")
-        raise NotImplementedError
 
     def uninstall_module(self, module: str):
         """

@@ -207,7 +207,7 @@ class ModulesTab(Tab):
         if len(self.device_modules_listbox.selected) > 0:
             self.uninstall_button.enabled = True
             module_selected = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
-            if module_selected in self.string_to_module:
+            if hasattr(self, "string_to_module") and module_selected in self.string_to_module:
                 logger.debug(f"Module {module_selected} is in currently selected bundle version!")
                 self.update_button.enabled = True
 
@@ -234,6 +234,22 @@ class ModulesTab(Tab):
         """
         Update the selected module.
         """
+        target_name = self.device_modules_listbox.values[self.device_modules_listbox.selected[0]]
+        logger.debug(f"Reinstalling module {target_name}")
+        try:
+            self.cpybm.selected_drive.uninstall_module(target_name)
+            target = self.string_to_module[target_name]
+            logger.debug(f"Installing module {target} ({target_name})")
+            self.cpybm.selected_drive.install_module(target)
+        except Exception as e:
+            show_error(self, title="CircuitPython Bundle Manager: Error!",
+                       message=f"Failed to reinstall module {target_name}!",
+                       detail=str(e))
+        else:
+            show_info(self, title="CircuitPython Bundle Manager: Info",
+                      message=f"Successfully reinstalled module {target_name}!")
+        self.cpybm.selected_drive.recalculate_info()
+        self.update_device_modules()
 
     def uninstall_module(self):
         """
@@ -262,7 +278,7 @@ class ModulesTab(Tab):
         make_resizable(self.stuff_frame, rows=0, cols=range(0, 3))
         self.install_button = Button(self.stuff_frame, text="Install module", command=self.install_module)
         self.install_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.update_button = Button(self.stuff_frame, text="Update module", command=self.update_module)
+        self.update_button = Button(self.stuff_frame, text="Reinstall module", command=self.update_module)
         self.update_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
         self.uninstall_button = Button(self.stuff_frame, text="Uninstall module", command=self.uninstall_module)
         self.uninstall_button.grid(row=0, column=2, padx=1, pady=1, sticky=tk.NSEW)
