@@ -7,20 +7,24 @@ from TkZero.Progressbar import Progressbar, ProgressModes
 
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
+from typing import Callable
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-def show_indeterminate(parent, title: str, label: str) -> CustomDialog:
+def show_indeterminate(parent, title: str, label: str,
+                       on_close: Callable = lambda: None) -> CustomDialog:
     """
     Show a generic loading dialog.
 
     :param parent: The parent of this window.
     :param title: The title of the dialog.
     :param label: THe label of the dialog.
+    :param on_close: The function to run when this dialog is closed.
     """
     dialog = CustomDialog(parent)
     dialog.title = title
+    dialog.on_close = on_close
 
     title_label = Label(dialog, text=label)
     title_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
@@ -38,17 +42,20 @@ def show_indeterminate(parent, title: str, label: str) -> CustomDialog:
     return dialog
 
 
-def show_determinate(parent, title: str, label: str) -> tuple[CustomDialog,
-                                                              Progressbar]:
+def show_determinate(parent, title: str, label: str,
+                     on_close: Callable = lambda: None) -> tuple[CustomDialog,
+                                                                 Progressbar]:
     """
     Show a generic loading dialog.
 
     :param parent: The parent of this window.
     :param title: The title of the dialog.
     :param label: THe label of the dialog.
+    :param on_close:The function to run when this dialog is closed.
     """
     dialog = CustomDialog(parent)
     dialog.title = title
+    dialog.on_close = on_close
 
     title_label = Label(dialog, text=label)
     title_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
@@ -64,7 +71,8 @@ def show_determinate(parent, title: str, label: str) -> tuple[CustomDialog,
     return dialog, pb
 
 
-def show_determinate_with_label(parent, title: str, label: str) -> \
+def show_determinate_with_label(parent, title: str, label: str,
+                                on_close: Callable = lambda: None) -> \
         tuple[CustomDialog, Progressbar, Label]:
     """
     Show a generic loading dialog.
@@ -72,9 +80,11 @@ def show_determinate_with_label(parent, title: str, label: str) -> \
     :param parent: The parent of this window.
     :param title: The title of the dialog.
     :param label: THe label of the dialog.
+    :param on_close:The function to run when this dialog is closed.
     """
     dialog = CustomDialog(parent)
     dialog.title = title
+    dialog.on_close = on_close
 
     title_label = Label(dialog, text=label)
     title_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
@@ -104,14 +114,16 @@ def show_deleting(parent, name: str) -> CustomDialog:
                               f"Removing bundle {name}...")
 
 
-def show_get_releases(parent) -> tuple[CustomDialog, Progressbar]:
+def show_get_releases(parent, on_close: Callable) -> tuple[CustomDialog, Progressbar]:
     """
     Show loading dialog saying that we are getting the releases.
 
     :param parent: The parent of this window.
+    :param on_close: The function to call when this window is closed.
     """
     return show_determinate(parent, f"Getting all releases",
-                            f"Getting releases available to download...")
+                            f"Getting releases available to download...",
+                            on_close)
 
 
 def show_download_release(parent) -> tuple[CustomDialog, Progressbar, Label]:

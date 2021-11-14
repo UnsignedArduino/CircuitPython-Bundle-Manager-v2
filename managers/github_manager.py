@@ -31,6 +31,9 @@ class GitHubManager(metaclass=Singleton):
         self.bundle_path = bundle_path
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
+        self.cancel_get = False
+        self.got_releases = False
+        self.cached_releases = []
 
     def get_bundle_releases(self, pb_func: Callable) -> list[GitRelease]:
         """
@@ -41,6 +44,11 @@ class GitHubManager(metaclass=Singleton):
          the total.
         :return: A list of github.GitRelease.GitRelease
         """
+        if self.got_releases:
+            logger.debug("Using cached list of releases in memory!")
+            return self.cached_releases
+        self.cancel_get = False
+        self.got_releases = False
         logger.debug("Getting repo...")
         repo = self.github.get_repo(self.bundle_repo)
         logger.debug("Getting releases...")
@@ -50,8 +58,20 @@ class GitHubManager(metaclass=Singleton):
         for index, item in enumerate(pag_list):
             pb_func(index, total)
             releases.append(item)
+            if self.cancel_get:
+                logger.debug("Canceled getting releases!")
+                return []
         logger.debug(f"Got {len(releases)} GitReleases")
+        self.got_releases = True
+        self.cached_releases = releases
         return releases
+
+    def cancel_get_bundle_releases(self):
+        """
+        Cancel getting the bundle releases.
+        """
+        logger.debug(f"Canceling get bundle releases")
+        self.cancel_get = True
 
     def download_release(self, release: GitRelease, pb_func: Callable):
         """
