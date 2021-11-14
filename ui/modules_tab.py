@@ -1,7 +1,7 @@
 import logging
 import tkinter as tk
-
 from threading import Thread
+
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
 from TkZero.Dialog import show_info, show_error
@@ -11,11 +11,12 @@ from TkZero.Labelframe import Labelframe
 from TkZero.Listbox import Listbox
 from TkZero.Notebook import Tab, Notebook
 from TkZero.Scrollbar import Scrollbar, OrientModes
+from TkZero.Entry import Entry
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
-from ui.dialogs import loading
 from helpers.resize import make_resizable
+from ui.dialogs import loading
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -61,18 +62,22 @@ class ModulesTab(Tab):
         """
         self.bundle_modules_frame = Labelframe(self, text="Modules in selected bundle")
         self.bundle_modules_frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        make_resizable(self.bundle_modules_frame, rows=0, cols=0)
+        self.bundle_modules_frame.columnconfigure(0, weight=1)
+        make_resizable(self.bundle_modules_frame, rows=1, cols=0)
         self.no_bundle_label = Label(self.bundle_modules_frame, text="No bundle is selected!")
         self.no_bundle_label.enabled = False
         self.no_bundle_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
         self.no_bundle_label.grid_remove()
-        self.bundle_modules_listbox = Listbox(self.bundle_modules_frame, width=20, height=10, on_select=self.update_do_stuff_buttons)
+        self.search_entry = Entry(self.bundle_modules_frame, command=self.update_modules_in_bundle)
+        self.search_entry.grid(row=0, column=0, padx=(3, 2), pady=1, sticky=tk.NW + tk.E)
+        self.bundle_listbox_frame = Frame(self.bundle_modules_frame)
+        self.bundle_listbox_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.bundle_listbox_frame, cols=0, rows=0)
+        self.bundle_modules_listbox = Listbox(self.bundle_listbox_frame, width=20, height=10, on_select=self.update_do_stuff_buttons)
         self.bundle_modules_listbox.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-        self.bundle_modules_vscroll = Scrollbar(self.bundle_modules_frame, widget=self.bundle_modules_listbox)
+        self.bundle_modules_vscroll = Scrollbar(self.bundle_listbox_frame, widget=self.bundle_modules_listbox)
         self.bundle_modules_vscroll.grid(row=0, column=1, padx=1, pady=1)
-        self.bundle_modules_hscroll = Scrollbar(self.bundle_modules_frame,
-                                                orientation=OrientModes.Horizontal,
-                                                widget=self.bundle_modules_listbox)
+        self.bundle_modules_hscroll = Scrollbar(self.bundle_listbox_frame, orientation=OrientModes.Horizontal, widget=self.bundle_modules_listbox)
         self.bundle_modules_hscroll.grid(row=1, column=0, padx=1, pady=1)
         self.bundle_version_frame = Frame(self.bundle_modules_frame)
         make_resizable(self.bundle_version_frame, rows=0, cols=1)
@@ -82,11 +87,10 @@ class ModulesTab(Tab):
         self.bundle_version_combox = Combobox(self.bundle_version_frame, command=self.update_modules_in_bundle)
         self.bundle_version_combox.read_only = True
         self.bundle_version_combox.grid(row=0, column=1, padx=1, pady=1, sticky=tk.SW + tk.E)
-        self.no_bundle_label.grid()
-        self.bundle_modules_listbox.grid_remove()
-        self.bundle_modules_vscroll.grid_remove()
-        self.bundle_modules_hscroll.grid_remove()
+        self.search_entry.grid_remove()
+        self.bundle_listbox_frame.grid_remove()
         self.bundle_version_frame.grid_remove()
+        self.no_bundle_label.grid()
 
     def update_modules_in_bundle(self):
         """
@@ -95,12 +99,14 @@ class ModulesTab(Tab):
         logger.debug("Updating modules in bundle")
         if self.bundle_version_combox.value == "":
             return
+        search = self.search_entry.value
         bundle = self.string_to_bundle[self.bundle_version_combox.value]
         self.string_to_module = {}
         modules = []
         for name, module in bundle.items():
             self.string_to_module[name] = module
-            modules.append(name)
+            if search == "" or search in name:
+                modules.append(name)
         self.bundle_modules_listbox.values = modules
 
     def update_bundle_modules(self):
@@ -111,9 +117,8 @@ class ModulesTab(Tab):
         if self.cpybm.selected_bundle is not None:
             self.bundle_modules_frame.text = f"Modules in {self.cpybm.selected_bundle.title}"
             self.no_bundle_label.grid_remove()
-            self.bundle_modules_listbox.grid()
-            self.bundle_modules_vscroll.grid()
-            self.bundle_modules_hscroll.grid()
+            self.search_entry.grid()
+            self.bundle_listbox_frame.grid()
             self.bundle_version_frame.grid()
             self.string_to_bundle = {}
             for version, bundle in self.cpybm.selected_bundle.bundle.items():
@@ -125,9 +130,8 @@ class ModulesTab(Tab):
         else:
             self.bundle_modules_frame.text = "Modules in selected bundle"
             self.no_bundle_label.grid()
-            self.bundle_modules_listbox.grid_remove()
-            self.bundle_modules_vscroll.grid_remove()
-            self.bundle_modules_hscroll.grid_remove()
+            self.search_entry.grid_remove()
+            self.bundle_listbox_frame.grid_remove()
             self.bundle_version_frame.grid_remove()
 
     def make_device_modules_frame(self):
