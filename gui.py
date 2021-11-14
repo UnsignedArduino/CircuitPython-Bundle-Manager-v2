@@ -4,7 +4,6 @@ from pathlib import Path
 
 from PIL.ImageTk import PhotoImage
 from TkZero.MainWindow import MainWindow
-from typing import Callable
 from TkZero.Notebook import Notebook
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
@@ -24,14 +23,11 @@ class CircuitPythonBundleManagerGUI(MainWindow):
     """
     The GUI for the CircuitPython Bundle Manager v2.
     """
-    def __init__(self, settings: dict, settings_path: Path,
-                 save_settings_func: Callable):
+    def __init__(self, settings_path: Path):
         super().__init__()
-        self.settings = settings
         self.settings_path = settings_path
-        self.save_settings_func = save_settings_func
         logger.debug("Initialize CircuitPythonBundleManager")
-        self.cpybm = CircuitPythonBundleManager(settings)
+        self.cpybm = CircuitPythonBundleManager(settings_path)
         logger.debug("Creating GUI")
         self.create_gui()
         self.title = "CircuitPython Bundle Manager v2"

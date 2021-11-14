@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 import tkinter as tk
 from threading import Thread
 
@@ -55,7 +56,7 @@ class BundleTab(Tab):
                                            padx=1, pady=1, sticky=tk.NW)
         self.update_buttons()
         self.update_selected_bundle()
-        self.update_bundle_listbox()
+        self.update_bundle_listbox(self.load_last_selected_bundle)
         make_resizable(self, 3, 0)
 
     def make_buttons(self):
@@ -177,6 +178,26 @@ class BundleTab(Tab):
             self.cpybm.selected_bundle = bundle
             logger.debug(f"Selected bundle: {bundle}")
             self.selected_label.text = f"Selected bundle: {name}"
+            self.save_last_selected_bundle()
+
+    def load_last_selected_bundle(self):
+        """
+        Load the last selected bundle.
+        """
+        if not self.cpybm.data_manager.has_key("last_selected_bundle"):
+            return
+        last = self.cpybm.data_manager.get_key("last_selected_bundle")
+        logger.debug(f"Last selected bundle is {last}")
+        if last in self.listbox.values:
+            self.listbox.selected = (self.listbox.values.index(last), )
+            self.update_selected_bundle()
+
+    def save_last_selected_bundle(self):
+        """
+        Save the last selected bundle.
+        """
+        selected = self.listbox.values[self.listbox.selected[0]]
+        self.cpybm.data_manager.set_key("last_selected_bundle", selected)
 
     def make_bundle_listbox(self):
         """
@@ -191,9 +212,11 @@ class BundleTab(Tab):
         self.listbox_scroll.grid(row=0, column=1, padx=(0, 1), pady=1)
         make_resizable(self.listbox_frame, 0, 0)
 
-    def update_bundle_listbox(self):
+    def update_bundle_listbox(self, on_finish: Callable = lambda: None):
         """
         Update the list of bundles available.
+
+        :param on_finish: The function to run when the thread finishes.
         """
         logger.debug("Updating list of bundles")
         self.listbox_frame.enabled = False
@@ -209,6 +232,7 @@ class BundleTab(Tab):
             self.listbox_frame.enabled = True
             self.buttons_frame.enabled = True
             self.update_buttons()
+            on_finish()
 
         t = Thread(target=update, daemon=True)
         logger.debug(f"Spawning thread {t}")

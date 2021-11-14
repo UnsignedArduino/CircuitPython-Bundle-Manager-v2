@@ -8,6 +8,7 @@ from managers.bundle_manager import BundleManager, Bundle
 from managers.credential_manager import CredentialManager
 from managers.device_manager import DeviceManager
 from managers.device_manager import Drive
+from managers.data_manager import DataManager
 
 SERVICE_NAME = "CircuitPython Bundle Manager v2"
 GITHUB_TOKEN_NAME = "github_token"
@@ -22,8 +23,7 @@ else:
 
 
 class CircuitPythonBundleManager(metaclass=Singleton):
-    def __init__(self, settings: dict):
-        self.settings = settings
+    def __init__(self, settings_path: Path):
         self._selected_bundle = None
         self.on_new_selected_bundle = lambda: None
         self._selected_drive = None
@@ -31,6 +31,7 @@ class CircuitPythonBundleManager(metaclass=Singleton):
         self.cred_manager = CredentialManager(SERVICE_NAME, GITHUB_TOKEN_NAME)
         self.bundle_manager = BundleManager(BUNDLES_PATH)
         self.device_manager = DeviceManager(DRIVE_PATH)
+        self.data_manager = DataManager(settings_path)
 
     def delete_bundle(self, bundle: Bundle):
         """
