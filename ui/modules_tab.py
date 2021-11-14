@@ -1,6 +1,8 @@
 import logging
 import tkinter as tk
 
+from TkZero.Button import Button
+from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
 from TkZero.Listbox import Listbox
@@ -150,3 +152,12 @@ class ModulesTab(Tab):
         """
         Make the buttons that do stuff. (like install, uninstall)
         """
+        self.stuff_frame = Frame(self)
+        self.stuff_frame.grid(row=1, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(self.stuff_frame, rows=0, cols=range(0, 3))
+        self.install_button = Button(self.stuff_frame, text="Install module")
+        self.install_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        self.update_button = Button(self.stuff_frame, text="Update module")
+        self.update_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NSEW)
+        self.uninstall_button = Button(self.stuff_frame, text="Uninstall module")
+        self.uninstall_button.grid(row=0, column=2, padx=1, pady=1, sticky=tk.NSEW)
