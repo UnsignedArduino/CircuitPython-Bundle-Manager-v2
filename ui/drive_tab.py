@@ -1,5 +1,6 @@
 import logging
 import tkinter as tk
+import webbrowser
 
 from TkZero.Button import Button
 from TkZero.Combobox import Combobox
@@ -44,6 +45,14 @@ class DriveTab(Tab):
         make_resizable(self, cols=0, rows=1)
         self.make_info_frame()
 
+    def open_selected_drive(self):
+        """
+        Open the selected drive in explorer.
+        """
+        path = self.cpybm.selected_drive.path
+        logger.debug(f"Opening {path} in default file manager!")
+        webbrowser.open(str(path))
+
     def make_select_frame(self):
         """
         Make the selected device frame.
@@ -55,11 +64,15 @@ class DriveTab(Tab):
         self.select_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
         self.select_box = Combobox(self.select_frame, width=20,
                                    command=self.update_selected)
-        self.update_drives()
         self.select_box.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
         self.select_refresh = Button(self.select_frame, text="Refresh",
                                      command=self.update_drives)
         self.select_refresh.grid(row=0, column=2, padx=1, pady=0, sticky=tk.NE)
+        self.select_open = Button(self.select_frame, text="Open in default file manager",
+                                  command=self.open_selected_drive)
+        self.select_open.grid(row=0, column=3, padx=1, pady=0, sticky=tk.NE)
+        self.select_open.enabled = False
+        self.update_drives()
 
     def update_drives(self):
         """
@@ -79,12 +92,14 @@ class DriveTab(Tab):
         self.select_box.value = self.select_box.values[0]
         self.select_box.read_only = True
         self.select_frame.enabled = True
+        self.select_open.enabled = False
 
     def update_selected(self):
         """
         Update the selected device for the info frame.
         """
         logger.debug(f"Updating selected drive")
+        self.select_open.enabled = False
         try:
             selected_drive = self.drive_dict[self.select_box.value]
         except KeyError:
@@ -105,6 +120,7 @@ class DriveTab(Tab):
                                             f" / {str(selected_drive.total_size)})"
             self.total_storage_pbar.value = selected_drive.used_size
             self.total_storage_pbar.maximum = selected_drive.total_size
+            self.select_open.enabled = True
             if selected_drive.is_circuitpython:
                 self.boot_out_frame.enabled = True
                 self.boot_out_text.read_only = False
