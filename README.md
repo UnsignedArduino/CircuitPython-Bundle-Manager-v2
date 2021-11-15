@@ -45,13 +45,18 @@ with many more fixes and features!
 
 ## Usage
 
-> TODO: Finish!
+> Please note that the wiki is still a work in progress! Contributions are 
+> welcomed!
+
+All the documentation is available online on this repo's 
+[wiki](https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki)!
 
 ## Contributing
 
-> TODO: Finish!
+No different from any other project on GitHub - fork, clone, commit, 
+push, and pull request! 
 
 ## License
 
-This project is distributed under the `GNU General Public License v3.0` 
-license. See the [`LICENSE`](LICENSE) file for the full license. 
+This project is distributed under the `GNU General Public License v3.0`. See 
+the [`LICENSE`](LICENSE) file for the full license. 
