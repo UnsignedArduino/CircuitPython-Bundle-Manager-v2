@@ -1,3 +1,6 @@
+[comment]: <> (This README is based off the template found here: )
+[comment]: <> (https://github.com/dbader/readme-template)
+
 # CircuitPython-Bundle-Manager-v2
 > A Python program that makes it easy to manage modules on a CircuitPython 
 > device!
@@ -13,7 +16,32 @@ with many more fixes and features!
 
 ## Installation
 
-> TODO: Finish!
+### Install from source
+
+#### Windows
+
+1. `cd` to somewhere convenient. (Like a drive where all your projects go`)
+2. Download the repo
+   (`git clone https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2`)
+3. `cd` into the downloaded repo. 
+4. Create a virtual environment. (`python -m venv .venv`)
+5. Activate the virtual environment. (`".venv/Scripts/activate.bat"`)
+6. Install the requirements. (`pip install -r requirements.txt`)
+7. Run! (`python main.py`)
+
+#### Linux / macOS
+
+1. `cd` to somewhere convenient. (Like your home directory)
+2. Download the repo
+   (`git clone https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2`)
+3. `cd` into the downloaded repo. 
+4. Create a virtual environment. (`python3 -m venv .venv`)
+5. Activate the virtual environment. (`source .venv/bin/activate`)
+7. Install the requirements. (`pip3 install -r requirements.txt`)
+8. If the installation fails, then follow the instructions to 
+   [install `cryptography`](https://cryptography.io/en/latest/installation/#building-cryptography-on-linux)
+   on your machine. Then try step 7 again. 
+9. Run! (`python3 main.py`)
 
 ## Usage
 

@@ -44,7 +44,7 @@ class DataManager(metaclass=Singleton):
         :param key: The key as a string.
         :param value: A Hashable object.
         """
-        if self.dict[key] == value:
+        if key in self.dict and self.dict[key] == value:
             return
         self.dict[key] = value
         self.save_to_disk()
