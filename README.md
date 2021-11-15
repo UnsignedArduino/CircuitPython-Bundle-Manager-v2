@@ -37,11 +37,11 @@ with many more fixes and features!
 3. `cd` into the downloaded repo. 
 4. Create a virtual environment. (`python3 -m venv .venv`)
 5. Activate the virtual environment. (`source .venv/bin/activate`)
-7. Install the requirements. (`pip3 install -r requirements.txt`)
-8. If the installation fails, then follow the instructions to 
+6. Install the requirements. (`pip3 install -r requirements.txt`)
+7. If the installation fails, then follow the instructions to 
    [install `cryptography`](https://cryptography.io/en/latest/installation/#building-cryptography-on-linux)
-   on your machine. Then try step 7 again. 
-9. Run! (`python3 main.py`)
+   on your machine. Then try step 6 again. 
+8. Run! (`python3 main.py`)
 
 ## Usage
 
