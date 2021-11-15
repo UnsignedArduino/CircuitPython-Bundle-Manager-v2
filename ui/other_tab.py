@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 import tkinter as tk
 import webbrowser
 from pathlib import Path
@@ -14,6 +15,9 @@ from helpers.resize import make_resizable
 from ui.dialogs.credential_dialog import show_credential_manager
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
+
+PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2"
+DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
 
 
 class OtherTab(Tab):
@@ -34,6 +38,7 @@ class OtherTab(Tab):
         self.settings_path = settings_path
         self.cpybm = cpybm
         logger.debug("Making other tab")
+        self.switching_buttons = []
         self.make_gui()
 
     def make_gui(self):
@@ -55,15 +60,17 @@ class OtherTab(Tab):
         """
         Update some buttons to change behavior on shift key pressed.
         """
-        self.open_json_settings_button.text = "Copy path to settings file to clipboard"
-        self.open_json_settings_button.configure(command=lambda: self.copy_to_clipboard(str(self.settings_path)))
+        for button in self.switching_buttons:
+            button.text = button.other_text
+            button.configure(command=button.other_command)
 
     def off_shift(self):
         """
         Update some buttons to change behavior on shift key released.
         """
-        self.open_json_settings_button.text = "Open settings file in default JSON application"
-        self.open_json_settings_button.configure(command=lambda: webbrowser.open(str(self.settings_path)))
+        for button in self.switching_buttons:
+            button.text = button.regular_text
+            button.configure(command=button.regular_command)
 
     def copy_to_clipboard(self, text: str):
         """
@@ -74,6 +81,26 @@ class OtherTab(Tab):
         self.clipboard_clear()
         self.clipboard_append(text)
 
+    def make_switching_button(self, parent, text: str, command: Callable,
+                              other_text: str, other_command: Callable) -> Button:
+        """
+        Make a button that switches behaviors when the shift key is pressed.
+
+        :param parent: The parent of the button.
+        :param text: Text when shift isn't pressed.
+        :param command: Command when shift isn't pressed.
+        :param other_text: Text when shift is pressed.
+        :param other_command: Command when shift is pressed.
+        :return: A TkZero.Button.Button
+        """
+        button = Button(parent, text=text, command=command)
+        button.regular_text = text
+        button.regular_command = command
+        button.other_text = other_text
+        button.other_command = other_command
+        self.switching_buttons.append(button)
+        return button
+
     def make_main_frame(self):
         """
         Make the main frame contents.
@@ -83,9 +110,30 @@ class OtherTab(Tab):
         self.cred_frame_button = Button(self.main_frame, text="Go to credential settings",
                                         command=self.show_credentials_frame)
         self.cred_frame_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
-        self.open_json_settings_button = Button(self.main_frame, text="Open settings file in default JSON application",
-                                                command=lambda: webbrowser.open(str(self.settings_path)))
-        self.open_json_settings_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        self.open_project_button = self.make_switching_button(
+            parent=self.main_frame,
+            text="Open project on GitHub",
+            command=lambda: webbrowser.open(PROJECT_URL),
+            other_text="Copy URL to project on GitHub",
+            other_command=lambda: self.copy_to_clipboard(PROJECT_URL)
+        )
+        self.open_project_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        self.open_docs_button = self.make_switching_button(
+            parent=self.main_frame,
+            text="Open documentation online in default browser",
+            command=lambda: webbrowser.open(DOCUMENTATION_URL),
+            other_text="Copy URL to online documentation",
+            other_command=lambda: self.copy_to_clipboard(DOCUMENTATION_URL)
+        )
+        self.open_docs_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        self.open_json_button = self.make_switching_button(
+            parent=self.main_frame,
+            text="Open settings file in default JSON application",
+            command=lambda: webbrowser.open(str(self.settings_path)),
+            other_text="Copy path to settings file to clipboard",
+            other_command=lambda: self.copy_to_clipboard(str(self.settings_path))
+        )
+        self.open_json_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
 
     def show_main_frame(self):
         """
