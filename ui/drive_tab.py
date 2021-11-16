@@ -28,6 +28,7 @@ from TkZero.Combobox import Combobox
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
+from TkZero.Dialog import show_error
 from TkZero.Notebook import Tab, Notebook
 from TkZero.Progressbar import Progressbar
 from TkZero.Scrollbar import Scrollbar, OrientModes
@@ -85,7 +86,13 @@ class DriveTab(Tab):
         """
         path = self.cpybm.selected_drive.path
         logger.debug(f"Opening {path} in default file manager!")
-        webbrowser.open(str(path))
+        if path.exists():
+            webbrowser.open(str(path))
+        else:
+            show_error(self, title="CircuitPython Bundle Manager: Error!",
+                       message=f"Drive {path} has been disconnected!",
+                       detail="Refreshing available drives.")
+            self.update_drives()
 
     def make_select_frame(self):
         """
