@@ -24,9 +24,12 @@ import webbrowser
 from typing import Callable
 
 from TkZero.Button import Button
+from TkZero.Checkbutton import Checkbutton
 from TkZero.Frame import Frame
+from TkZero.Label import Label
 from TkZero.Labelframe import Labelframe
 from TkZero.Notebook import Tab, Notebook
+from TkZero.Style import define_style, WidgetStyleRoots
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from constants import *
@@ -57,6 +60,8 @@ class OtherTab(Tab):
         self.cpybm = cpybm
         logger.debug("Making other tab")
         self.switching_buttons = []
+        define_style(style_root=WidgetStyleRoots.Label, style_name="unset",
+                     foreground="#FF0000")
         self.make_gui()
 
     def make_gui(self):
@@ -125,41 +130,41 @@ class OtherTab(Tab):
         """
         self.main_frame = Frame(self)
         make_resizable(self.main_frame, 0, 0)
-        self.cred_frame_button = Button(self.main_frame, text="Go to credential settings",
+        cred_frame_button = Button(self.main_frame, text="Go to credential settings",
                                         command=self.show_credentials_frame)
-        self.cred_frame_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
-        self.open_project_button = self.make_switching_button(
+        cred_frame_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        open_project_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open project on GitHub",
             command=lambda: webbrowser.open(PROJECT_URL),
             other_text="Copy URL to project on GitHub",
             other_command=lambda: self.copy_to_clipboard(PROJECT_URL)
         )
-        self.open_project_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
-        self.open_docs_button = self.make_switching_button(
+        open_project_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_docs_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open documentation online in default browser",
             command=lambda: webbrowser.open(DOCUMENTATION_URL),
             other_text="Copy URL to online documentation",
             other_command=lambda: self.copy_to_clipboard(DOCUMENTATION_URL)
         )
-        self.open_docs_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
-        self.open_license_button = self.make_switching_button(
+        open_docs_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_license_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open license",
             command=lambda: show_text_file(self, "GPL-3.0 License", LICENSE_PATH),
             other_text="Copy URL to license online",
             other_command=lambda: self.copy_to_clipboard(LICENSE_URL)
         )
-        self.open_license_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
-        self.open_json_button = self.make_switching_button(
+        open_license_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_json_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open settings file in default JSON application",
             command=lambda: webbrowser.open(str(self.settings_path)),
             other_text="Copy path to settings file to clipboard",
             other_command=lambda: self.copy_to_clipboard(str(self.settings_path))
         )
-        self.open_json_button.grid(row=4, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_json_button.grid(row=4, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
 
     def show_main_frame(self):
         """
@@ -183,8 +188,40 @@ class OtherTab(Tab):
         actual_cred_frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
         make_resizable(actual_cred_frame, 0, 0)
         open_cred_manager_button = Button(actual_cred_frame, text="Open credential manager",
-                                          command=lambda: show_credential_manager(self, self.cpybm.cred_manager))
+                                          command=lambda: (show_credential_manager(self, self.cpybm), update_statuses()))
         open_cred_manager_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        keyring_in_mem_lbl = Label(actual_cred_frame, text="Keyring in memory: ?")
+        keyring_in_mem_lbl.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW)
+        keyring_in_os_lbl = Label(actual_cred_frame, text="Keyring in OS' credential manager: ?")
+        keyring_in_os_lbl.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW)
+
+        def update_statuses():
+            if self.cpybm.cred_manager.has_github_token():
+                keyring_in_mem_lbl.text = f"Keyring in memory: Yes"
+                keyring_in_mem_lbl.configure(style="TLabel")
+            else:
+                keyring_in_mem_lbl.text = f"Keyring in memory: No"
+                keyring_in_mem_lbl.apply_style("unset")
+            keyring_in_os_lbl.text = f"Keyring in OS' credential manager: {'Yes' if self.cpybm.cred_manager.has_github_token(in_keyring=True) else 'No'}"
+
+        update_statuses()
+
+        save_in_keyring_chkbtn = Checkbutton(actual_cred_frame,
+                                             text="Save in the OS' credential manager",
+                                             command=lambda: self.cpybm.data_manager.set_key("save_in_keyring", save_in_keyring_chkbtn.value))
+        if self.cpybm.data_manager.has_key("save_in_keyring"):
+            save_in_keyring_chkbtn.value = self.cpybm.data_manager.get_key("save_in_keyring")
+        save_in_keyring_chkbtn.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW)
+        keyring_warning_lbl = Label(
+            actual_cred_frame,
+            text="Note: Unchecking this value will not remove your key from "
+                 "the OS' credential manager if\none is already set. Please "
+                 "make sure to manually delete the key from the OS' "
+                 "credential\nmanager with the credential manager dialog if "
+                 "wanted!\n\nThis option must be checked before saving a key "
+                 "if you only want to \nkeep the key in memory."
+        )
+        keyring_warning_lbl.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NW)
         go_back_button = Button(self.cred_frame, text="Go back to main settings",
                                 command=self.hide_credentials_frame)
         go_back_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)

@@ -53,8 +53,7 @@ class CredentialManager(metaclass=Singleton):
         self.github_token = token
         if save_in_keyring:
             logger.debug("Saving token to OS' credential manager")
-            keyring.set_password(self.service_name, self.github_token_name,
-                                 token)
+            keyring.set_password(self.service_name, self.github_token_name, token)
 
     def get_github_token(self) -> Union[str, None]:
         """
@@ -65,11 +64,9 @@ class CredentialManager(metaclass=Singleton):
         :return: A str or None.
         """
         logger.debug("Obtaining GitHub token")
-        if self.github_token is not None:
-            return self.github_token
-        else:
-            return keyring.get_password(self.service_name,
-                                        self.github_token_name)
+        if self.github_token is None:
+            self.github_token = keyring.get_password(self.service_name, self.github_token_name)
+        return self.github_token
 
     def has_github_token(self, in_keyring: bool = False) -> bool:
         """
@@ -81,12 +78,10 @@ class CredentialManager(metaclass=Singleton):
         :return: A bool.
         """
         if in_keyring:
-            return keyring.get_password(self.service_name,
-                                        self.github_token_name) is not None
+            return keyring.get_password(self.service_name, self.github_token_name) is not None
         else:
             return self.github_token is not None or \
-                   keyring.get_password(self.service_name,
-                                        self.github_token_name) is not None
+                   keyring.get_password(self.service_name, self.github_token_name) is not None
 
     def delete_github_token(self):
         """

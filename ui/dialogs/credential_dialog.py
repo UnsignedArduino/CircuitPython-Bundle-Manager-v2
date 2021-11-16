@@ -31,22 +31,25 @@ from TkZero.Label import Label
 
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
-from managers.credential_manager import CredentialManager
+from circuitpython_bundle_manager import CircuitPythonBundleManager
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-def show_credential_manager(parent, cred: CredentialManager):
+def show_credential_manager(parent, cpybm: CircuitPythonBundleManager):
     """
     Show the credential manager dialog.
 
     :param parent: The parent of this window.
-    :param cred: The credential manager instance.
+    :param cpybm: The CircuitPythonBundleManager instance.
     """
     dialog = CustomDialog(parent)
     logger.debug(f"Showing credential manager dialog")
     dialog.title = "CircuitPython Bundle Manager v2: Credential Manager"
     make_resizable(dialog, range(0, 2), 0)
+
+    cred = cpybm.cred_manager
+    data = cpybm.data_manager
 
     token_frame = Frame(dialog)
     token_frame.grid(row=0, column=0, sticky=tk.NSEW)
@@ -56,7 +59,7 @@ def show_credential_manager(parent, cred: CredentialManager):
     token_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
 
     token_entry = Entry(token_frame, width=50, show="*")
-    if cred.has_github_token(in_keyring=True):
+    if cred.has_github_token():
         token_entry.value = cred.get_github_token()
     token_entry.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
 
@@ -92,7 +95,7 @@ def show_credential_manager(parent, cred: CredentialManager):
 
     def save():
         try:
-            cred.set_github_token(token_entry.value)
+            cred.set_github_token(token_entry.value, data.get_key("save_in_keyring"))
         except Exception as e:
             show_error(dialog, title="CircuitPython Bundle Manager v2: Error!",
                        message="There was an error saving the GitHub token!",
