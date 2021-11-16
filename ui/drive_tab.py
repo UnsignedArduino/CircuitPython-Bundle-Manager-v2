@@ -126,17 +126,23 @@ class DriveTab(Tab):
         self.update()
         self.select_box.read_only = False
         self.drive_dict = {"None": None}
-        self.cpybm.device_manager.index_drives()
-        for drive in self.cpybm.device_manager.circuitpython_drives:
-            self.drive_dict[str(drive.path) + " (CircuitPython drive)"] = drive
-        for drive in self.cpybm.device_manager.drives:
-            self.drive_dict[str(drive.path)] = drive
-        self.select_box.values = self.drive_dict.keys()
-        self.select_box.value = self.select_box.values[0]
-        on_finish()
-        self.select_box.read_only = True
-        self.select_frame.enabled = True
-        self.select_open.enabled = False
+        try:
+            self.cpybm.device_manager.index_drives()
+            for drive in self.cpybm.device_manager.circuitpython_drives:
+                self.drive_dict[str(drive.path) + " (CircuitPython drive)"] = drive
+            for drive in self.cpybm.device_manager.drives:
+                self.drive_dict[str(drive.path)] = drive
+            self.select_box.values = self.drive_dict.keys()
+            self.select_box.value = self.select_box.values[0]
+        except Exception as e:
+            show_error(self, title="CircuitPython Bundle Manager: Error!",
+                       message=f"There was an error refreshing the list of available drives!",
+                       detail=str(e))
+        finally:
+            self.select_box.read_only = True
+            self.select_frame.enabled = True
+            self.select_open.enabled = False
+            on_finish()
 
     def update_selected(self):
         """

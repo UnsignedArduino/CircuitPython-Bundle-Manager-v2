@@ -22,6 +22,7 @@ import logging
 
 from constants import *
 from gui import CircuitPythonBundleManagerGUI
+from TkZero.Dialog import show_error
 from helpers.create_logger import create_logger
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
@@ -29,6 +30,11 @@ logger = create_logger(name=__name__, level=logging.DEBUG)
 logger.debug(f"Path to settings file is {SETTINGS_PATH}")
 
 gui = CircuitPythonBundleManagerGUI(SETTINGS_PATH)
-gui.lift()
-logger.debug("Starting event loop")
-gui.mainloop()
+try:
+    gui.lift()
+    logger.debug("Starting event loop")
+    gui.mainloop()
+except Exception as e:
+    show_error(gui, title="CircuitPython Bundle Manager: Error!",
+               message=f"Fatel error encountered!",
+               detail=str(e))
