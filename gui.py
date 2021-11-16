@@ -20,13 +20,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 import tkinter as tk
-from pathlib import Path
 
 from PIL.ImageTk import PhotoImage
 from TkZero.MainWindow import MainWindow
 from TkZero.Notebook import Notebook
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
+from constants import *
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from ui.bundle_tab import BundleTab
@@ -35,8 +35,6 @@ from ui.modules_tab import ModulesTab
 from ui.other_tab import OtherTab
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
-
-ICON_PATH = Path.cwd() / "icon.png"
 
 
 class CircuitPythonBundleManagerGUI(MainWindow):

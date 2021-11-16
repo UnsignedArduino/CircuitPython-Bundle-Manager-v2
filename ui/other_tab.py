@@ -19,10 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
-from typing import Callable
 import tkinter as tk
 import webbrowser
-from pathlib import Path
+from typing import Callable
 
 from TkZero.Button import Button
 from TkZero.Frame import Frame
@@ -30,17 +29,13 @@ from TkZero.Labelframe import Labelframe
 from TkZero.Notebook import Tab, Notebook
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
+from constants import *
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from ui.dialogs.credential_dialog import show_credential_manager
 from ui.dialogs.text_dialog import show_text_file
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
-
-PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2"
-DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
-LICENSE_PATH = Path.cwd() / "LICENSE"
-LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/blob/main/LICENSE"
 
 
 class OtherTab(Tab):

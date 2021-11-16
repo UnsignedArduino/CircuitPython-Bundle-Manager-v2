@@ -18,17 +18,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import logging
+from pathlib import Path
 
-from constants import *
-from gui import CircuitPythonBundleManagerGUI
-from helpers.create_logger import create_logger
+SETTINGS_PATH = Path.cwd() / "settings.json"
+ICON_PATH = Path.cwd() / "icon.png"
+LICENSE_PATH = Path.cwd() / "LICENSE"
 
-logger = create_logger(name=__name__, level=logging.DEBUG)
-
-logger.debug(f"Path to settings file is {SETTINGS_PATH}")
-
-gui = CircuitPythonBundleManagerGUI(SETTINGS_PATH)
-gui.lift()
-logger.debug("Starting event loop")
-gui.mainloop()
+PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2"
+DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
+LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/blob/main/LICENSE"
