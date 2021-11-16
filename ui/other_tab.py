@@ -33,11 +33,14 @@ from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from ui.dialogs.credential_dialog import show_credential_manager
+from ui.dialogs.text_dialog import show_text_file
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2"
 DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
+LICENSE_PATH = Path.cwd() / "LICENSE"
+LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/blob/main/LICENSE"
 
 
 class OtherTab(Tab):
@@ -146,6 +149,14 @@ class OtherTab(Tab):
             other_command=lambda: self.copy_to_clipboard(DOCUMENTATION_URL)
         )
         self.open_docs_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        self.open_license_button = self.make_switching_button(
+            parent=self.main_frame,
+            text="Open license",
+            command=lambda: show_text_file(self, "GPL-3.0 License", LICENSE_PATH),
+            other_text="Copy URL to license online",
+            other_command=lambda: self.copy_to_clipboard(LICENSE_URL)
+        )
+        self.open_license_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
         self.open_json_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open settings file in default JSON application",
@@ -153,7 +164,7 @@ class OtherTab(Tab):
             other_text="Copy path to settings file to clipboard",
             other_command=lambda: self.copy_to_clipboard(str(self.settings_path))
         )
-        self.open_json_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        self.open_json_button.grid(row=4, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
 
     def show_main_frame(self):
         """
