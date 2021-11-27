@@ -157,7 +157,7 @@ class BundleTab(Tab):
             self.update_bundle_listbox()
             self.update_selected_bundle()
             self.update_buttons()
-            dialog.close()
+            dialog.destroy()
 
         t = Thread(target=delete, daemon=True)
         logger.debug(f"Spawning thread {t}")
