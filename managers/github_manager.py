@@ -51,47 +51,11 @@ class GitHubManager(metaclass=Singleton):
         self.bundle_path = bundle_path
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
-    #     self.cancel_get = False
-    #     self.got_releases = False
-    #     self.cached_releases = []
-    #
-    # def get_bundle_releases(self, pb_func: Callable) -> list[GitRelease]:
-    #     """
-    #     Get all the bundle releases and return a list of them.
-    #
-    #     :param pb_func: A function to call to update GUIs, etc. Will be passed
-    #      2 ints positionally with the first being how far and the second being
-    #      the total.
-    #     :return: A list of github.GitRelease.GitRelease
-    #     """
-    #     if self.got_releases:
-    #         logger.debug("Using cached list of releases in memory!")
-    #         return self.cached_releases
-    #     self.cancel_get = False
-    #     self.got_releases = False
-    #     logger.debug("Getting repo...")
-    #     repo = self.github.get_repo(self.bundle_repo)
-    #     logger.debug("Getting releases...")
-    #     pag_list = repo.get_releases()
-    #     releases = []
-    #     total = pag_list.totalCount
-    #     for index, item in enumerate(pag_list):
-    #         pb_func(index, total)
-    #         releases.append(item)
-    #         if self.cancel_get:
-    #             logger.debug("Canceled getting releases!")
-    #             return []
-    #     logger.debug(f"Got {len(releases)} GitReleases")
-    #     self.got_releases = True
-    #     self.cached_releases = releases
-    #     return releases
-    #
-    # def cancel_get_bundle_releases(self):
-    #     """
-    #     Cancel getting the bundle releases.
-    #     """
-    #     logger.debug(f"Canceling get bundle releases")
-    #     self.cancel_get = True
+        logger.debug("Getting repo...")
+        self.repo = self.github.get_repo(self.bundle_repo)
+        logger.debug("Getting releases...")
+        self.release_pag = self.repo.get_releases()
+        self.max_page = int(self.release_pag._getLastPageUrl().split("?page=")[1])
 
     def download_release(self, release: GitRelease, pb_func: Callable):
         """
@@ -140,7 +104,7 @@ class GitHubManager(metaclass=Singleton):
             got = 0
             if url.endswith(".zip"):
                 zip_data = BytesIO()
-                for chunk in response.iter_content(chunk_size=1024):
+                for chunk in response.iter_content(chunk_size=1024 * 64):
                     got += len(chunk)
                     status = f"Downloading ZIP file - " \
                              f"{str(ByteSize(got))} / " \

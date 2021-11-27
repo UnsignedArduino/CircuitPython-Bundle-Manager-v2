@@ -46,153 +46,232 @@ class NoTokenError(Exception):
     """No token has been detected in the OS' keyring"""
 
 
-def make_release_select_frame(gm: GitHubManager, parent):
+class AddBundleDialog(CustomDialog):
     """
-    Make the release select frame and wait until the user selects one
-
-    :param gm: A GitHub manager already initialized.
-    :param parent: The parent.
+    A dialog that shows all the releases you can download.
     """
-    frame = Frame(parent)
-    frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
-    make_resizable(frame, 1, range(0, 2))
+    def __init__(self, parent, cpybm: CircuitPythonBundleManager):
+        """
+        Initialize the AddBundleDialog
 
-    listbox_frame = Frame(frame)
-    listbox_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
-    make_resizable(listbox_frame, range(1, 2), 0)
+        :param parent: The parent of this dialog.
+        :param cpybm: The CircuitPythonBundleManager instance.
+        """
+        super().__init__(parent)
+        self.cpybm = cpybm
+        if not cpybm.cred_manager.has_github_token():
+            raise NoTokenError("No token has been detected! Please go to "
+                               "Other --> Go to credential settings --> Open "
+                               "credential manager and fill and save a valid "
+                               "GitHub token!")
+        logger.debug("Opening add bundle dialog")
+        self.title = "CircuitPython Bundle Manager v2: Add bundle"
+        self.token = cpybm.cred_manager.get_github_token()
+        self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
+        self.values = {}
+        self.curr_page = 0
+        self.max_page = self.gm.max_page
+        self.create_gui()
+        self.wait_till_destroyed()
 
-    listbox_label = Label(frame, text="Available releases:")
-    listbox_label.grid(row=0, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NW)
+    def make_sidebar(self):
+        """
+        Make the side bar in the dialog. (With all the buttons)
+        """
+        button_frame = Frame(self)
+        button_frame.grid(row=1, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+        make_resizable(button_frame, range(0, 4), 0)
 
-    values = {}
-    for release in []:
-        values[release.title] = release
+        self.open_url_button = Button(button_frame, text="Open release on GitHub")
+        self.open_url_button.enabled = False
+        self.open_url_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    def update():
-        open_url_button.enabled = False
-        versions_label.enabled = False
-        versions_entry.enabled = True
-        versions_entry.read_only = False
-        versions_entry.value = ""
-        versions_entry.read_only = True
-        versions_entry.enabled = False
-        download_button.enabled = False
-        parent.update_idletasks()
-        if len(listbox.selected) == 0:
+        version_frame = Frame(button_frame)
+        version_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        make_resizable(version_frame, 0, 1)
+
+        self.versions_label = Label(version_frame, text="Versions available: ")
+        self.versions_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
+
+        self.versions_entry = Entry(version_frame, width=25)
+        self.versions_entry.read_only = True
+        self.versions_entry.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+        def download():
+            download_dlg, pb, lbl = show_download_release(self)
+
+            def update_pb(got, total, status):
+                pb.value = got
+                pb.maximum = total
+                lbl.text = status
+
+            def actually_download():
+                selected_index = self.listbox.selected[0]
+                selected = self.values[
+                    list(self.values.keys())[selected_index]].title
+                selected_release = self.values[selected]
+                try:
+                    self.gm.download_release(selected_release, update_pb)
+                except Exception as e:
+                    logger.exception("Error while downloading release!")
+                    show_error(self,
+                               title="CircuitPython Bundle Manager v2: Error!",
+                               message="There was an error downloading the release!",
+                               detail=str(e))
+                else:
+                    show_info(self,
+                              title="CircuitPython Bundle Manager v2: Error!",
+                              message="Successfully downloaded release!")
+                finally:
+                    download_dlg.destroy()
+                    self.grab_set()
+
+            t = Thread(target=actually_download)
+            logger.debug(f"Starting thread {t}")
+            t.start()
+
+        self.download_button = Button(button_frame, text="Download", command=download)
+        self.download_button.enabled = False
+        self.download_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+        self.cancel_button = Button(button_frame, text="Close", command=self.close)
+        self.cancel_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+    def update_sidebar(self):
+        """
+        Update the side bar in the dialog. (With all the buttons)
+        """
+        logger.debug("Update sidebar")
+        self.open_url_button.enabled = False
+        self.versions_label.enabled = False
+        self.versions_entry.enabled = True
+        self.versions_entry.read_only = False
+        self.versions_entry.value = ""
+        self.versions_entry.read_only = True
+        self.versions_entry.enabled = False
+        self.download_button.enabled = False
+        self.update_idletasks()
+        if len(self.listbox.selected) == 0:
             return
-        selected_index = listbox.selected[0]
-        selected = values[list(values.keys())[selected_index]].title
-        selected_release = values[selected]
-        open_url_button.configure(
+        selected_index = self.listbox.selected[0]
+        selected = self.values[list(self.values.keys())[selected_index]].title
+        selected_release = self.values[selected]
+        self.open_url_button.configure(
             command=lambda: webbrowser.open(selected_release.html_url)
         )
         assets = list(selected_release.get_assets())
-        versions_entry.enabled = True
-        versions_entry.read_only = False
+        self.versions_entry.enabled = True
+        self.versions_entry.read_only = False
         versions = []
         for asset in assets:
             name = asset.name
             if "-mpy-" not in name and "-py-" not in name:
                 continue
             show_name = name.replace("adafruit-circuitpython-bundle-", "")
-            show_name = show_name.replace(f"-{selected_release.tag_name}.zip", "")
+            show_name = show_name.replace(
+                f"-{selected_release.tag_name}.zip", "")
             versions.append(show_name)
-        versions_entry.value = ", ".join(versions)
-        versions_entry.read_only = True
-        open_url_button.enabled = True
-        versions_label.enabled = True
-        download_button.enabled = True
+        self.versions_entry.value = ", ".join(versions)
+        self.versions_entry.read_only = True
+        self.open_url_button.enabled = True
+        self.versions_label.enabled = True
+        self.download_button.enabled = True
 
-    listbox = Listbox(listbox_frame, values=list(values.keys()),
-                      height=10, width=30, on_select=update)
-    listbox.grid(row=1, column=0, padx=(1, 0), pady=1, sticky=tk.NSEW)
+    def change_page(self, new_page: int):
+        """
+        Set the new page.
 
-    listbox_scroll = Scrollbar(listbox_frame, widget=listbox)
-    listbox_scroll.grid(row=1, column=1, padx=(0, 1), pady=1)
+        :param new_page: The new page to set.
+        """
+        self.curr_page = new_page
+        self.update_navigation()
+        self.update_page()
 
-    navigate_frame = Frame(listbox_frame)
-    navigate_frame.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
-    make_resizable(navigate_frame, rows=0, cols=range(6))
+    def make_listbox(self):
+        """
+        Make the listbox which has all the releases in it.
+        """
+        listbox_frame = Frame(self)
+        listbox_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(listbox_frame, range(1, 2), 0)
 
-    leftest_button = Button(navigate_frame, text="<<")
-    leftest_button.configure(width=3)
-    leftest_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        listbox_label = Label(self, text="Available releases:")
+        listbox_label.grid(row=0, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NW)
 
-    left_button = Button(navigate_frame, text="<")
-    left_button.configure(width=3)
-    left_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.listbox = Listbox(listbox_frame, values=list(self.values.keys()),
+                               height=10, width=30, on_select=self.update_sidebar)
+        self.listbox.grid(row=1, column=0, padx=(1, 0), pady=1, sticky=tk.NSEW)
 
-    page_entry = Entry(navigate_frame, width=3)
-    page_entry.value = "0"
-    page_entry.grid(row=0, column=2, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
+        listbox_scroll = Scrollbar(listbox_frame, widget=self.listbox)
+        listbox_scroll.grid(row=1, column=1, padx=(0, 1), pady=1)
 
-    page_lbl = Label(navigate_frame, text="of unknown pages")
-    page_lbl.grid(row=0, column=3, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
+        navigate_frame = Frame(listbox_frame)
+        navigate_frame.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
+        make_resizable(navigate_frame, rows=0, cols=range(6))
 
-    right_button = Button(navigate_frame, text=">")
-    right_button.configure(width=3)
-    right_button.grid(row=0, column=4, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.leftest_button = Button(navigate_frame, text="<<", command=lambda: self.change_page(0))
+        self.leftest_button.configure(width=3)
+        self.leftest_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    rightest_button = Button(navigate_frame, text=">>")
-    rightest_button.configure(width=3)
-    rightest_button.grid(row=0, column=5, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.left_button = Button(navigate_frame, text="<", command=lambda: self.change_page(self.curr_page - 1))
+        self.left_button.configure(width=3)
+        self.left_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    button_frame = Frame(frame)
-    button_frame.grid(row=1, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
-    make_resizable(button_frame, range(0, 4), 0)
+        self.page_lbl = Label(navigate_frame, text=f"{self.curr_page + 1}/{self.max_page} pages")
+        self.page_lbl.grid(row=0, column=3, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
 
-    open_url_button = Button(button_frame, text="Open release on GitHub")
-    open_url_button.enabled = False
-    open_url_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.right_button = Button(navigate_frame, text=">", command=lambda: self.change_page(self.curr_page + 1))
+        self.right_button.configure(width=3)
+        self.right_button.grid(row=0, column=4, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    version_frame = Frame(button_frame)
-    version_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
-    make_resizable(version_frame, 0, 1)
+        self.rightest_button = Button(navigate_frame, text=">>", command=lambda: self.change_page(self.max_page - 1))
+        self.rightest_button.configure(width=3)
+        self.rightest_button.grid(row=0, column=5, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    versions_label = Label(version_frame, text="Versions available: ")
-    versions_label.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
+    def update_navigation(self):
+        """
+        Update the navigation
+        """
+        logger.debug("Updating navigation")
+        if self.curr_page == 0:
+            self.left_button.enabled = False
+            self.leftest_button.enabled = False
+        else:
+            self.left_button.enabled = True
+            self.leftest_button.enabled = True
+        if self.curr_page == self.max_page - 1:
+            self.right_button.enabled = False
+            self.rightest_button.enabled = False
+        else:
+            self.right_button.enabled = True
+            self.rightest_button.enabled = True
+        self.page_lbl.text = f"{self.curr_page + 1}/{self.max_page} pages"
 
-    versions_entry = Entry(version_frame, width=25)
-    versions_entry.read_only = True
-    versions_entry.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+    def update_page(self):
+        """
+        Update the current page
+        """
+        logger.debug("Updating current page")
+        self.enabled = False
+        self.update_idletasks()
+        self.values = {}
+        logger.debug(f"Updating to page {self.curr_page}")
+        for release in self.gm.release_pag.get_page(self.curr_page):
+            self.values[release.title] = release
+        self.listbox.values = self.values.keys()
+        self.enabled = True
+        self.update_sidebar()
+        self.update_navigation()
 
-    def download():
-        download_dlg, pb, lbl = show_download_release(parent)
-
-        def update_pb(got, total, status):
-            pb.value = got
-            pb.maximum = total
-            lbl.text = status
-
-        def actually_download():
-            selected_index = listbox.selected[0]
-            selected = values[list(values.keys())[selected_index]].title
-            selected_release = values[selected]
-            try:
-                gm.download_release(selected_release, update_pb)
-            except Exception as e:
-                logger.exception("Error while downloading release!")
-                show_error(parent, title="CircuitPython Bundle Manager v2: Error!",
-                           message="There was an error downloading the release!",
-                           detail=str(e))
-            else:
-                show_info(parent, title="CircuitPython Bundle Manager v2: Error!",
-                          message="Successfully downloaded release!")
-            finally:
-                download_dlg.destroy()
-                parent.grab_set()
-
-        t = Thread(target=actually_download)
-        logger.debug(f"Starting thread {t}")
-        t.start()
-
-    download_button = Button(button_frame, text="Download",
-                             command=download)
-    download_button.enabled = False
-    download_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
-
-    cancel_button = Button(button_frame, text="Close", command=parent.close)
-    cancel_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+    def create_gui(self):
+        """
+        Create the GUI for this dialog.
+        """
+        self.make_listbox()
+        self.make_sidebar()
+        self.update_sidebar()
+        self.update_navigation()
+        self.update_page()
 
 
 def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
@@ -202,45 +281,4 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
     :param parent: The parent of this window.
     :param cpybm: The CircuitPythonBundleManager instance.
     """
-    if not cpybm.cred_manager.has_github_token():
-        raise NoTokenError("No token has been detected! "
-                           "Please go to Other --> Go to credential settings "
-                           "--> Open credential manager and fill and save a "
-                           "valid GitHub token!")
-
-    dialog = CustomDialog(parent)
-    logger.debug("Opening add bundle dialog")
-    dialog.title = f"CircuitPython Bundle Manager v2: Add bundle"
-    make_resizable(dialog, 0, 0)
-
-    token = cpybm.cred_manager.get_github_token()
-    gm = GitHubManager(token, BUNDLE_REPO, BUNDLES_PATH)
-
-    make_release_select_frame(gm, dialog)
-
-    # fake_frame = make_release_select_frame(gm, dialog, [])
-    #
-    # def on_close():
-    #     if not gm.got_releases:
-    #         gm.cancel_get_bundle_releases()
-    #     dialog.destroy()
-    #
-    # loading, pb = show_get_releases(dialog, on_close)
-    #
-    # def update_pb(got, total):
-    #     pb.value = got
-    #     pb.maximum = total
-    #
-    # def get_and_select_release():
-    #     logger.debug("Getting releases!")
-    #     releases = gm.get_bundle_releases(update_pb)
-    #     loading.destroy()
-    #     dialog.grab_set()
-    #     fake_frame.grid_forget()
-    #     make_release_select_frame(gm, dialog, releases)
-    #
-    # t = Thread(target=get_and_select_release, daemon=True)
-    # logger.debug(f"Starting thread {t}")
-    # t.start()
-
-    dialog.wait_till_destroyed()
+    AddBundleDialog(parent, cpybm)

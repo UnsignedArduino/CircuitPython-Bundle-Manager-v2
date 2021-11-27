@@ -167,17 +167,6 @@ def show_reinstalling(parent, name: str) -> CustomDialog:
                               f"Reinstalling module {name}...")
 
 
-def show_get_releases(parent, on_close: Callable) -> tuple[CustomDialog, Progressbar]:
-    """
-    Show loading dialog saying that we are getting the releases.
-
-    :param parent: The parent of this window.
-    :param on_close: The function to call when this window is closed.
-    """
-    return show_determinate(parent, f"Getting releases",
-                            f"Getting releases...", on_close)
-
-
 def show_download_release(parent) -> tuple[CustomDialog, Progressbar, Label]:
     """
     Show loading dialog saying that we are downloading the release.
