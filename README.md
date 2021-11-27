@@ -12,7 +12,7 @@ As the name implies, it's version 2 of the original
 [CircuitPython-Bundle-Manager](https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager)
 with many more fixes and features!
 
-![A picture of the CircuitPython Bundle Manager's Modules tab open](assets/images/1.png)
+![A picture of the CircuitPython Bundle Manager's Modules tab open](https://user-images.githubusercontent.com/38868705/143666017-dd05b7dc-b38b-4994-8bae-59b58901ffb4.png)
 
 ## Installation
 
