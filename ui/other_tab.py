@@ -218,8 +218,8 @@ class OtherTab(Tab):
                  "the OS' credential manager if\none is already set. Please "
                  "make sure to manually delete the key from the OS' "
                  "credential\nmanager with the credential manager dialog if "
-                 "wanted!\n\nThis option must be checked before saving a key "
-                 "if you only want to \nkeep the key in memory."
+                 "wanted!\n\nThis option must be unchecked before saving a "
+                 "key if you only want to \nkeep the key in memory."
         )
         keyring_warning_lbl.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NW)
         go_back_button = Button(self.cred_frame, text="Go back to main settings",
