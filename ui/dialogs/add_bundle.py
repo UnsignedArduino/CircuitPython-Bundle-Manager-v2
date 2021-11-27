@@ -25,21 +25,19 @@ from threading import Thread
 
 from TkZero.Button import Button
 from TkZero.Dialog import CustomDialog
+from TkZero.Dialog import show_error, show_info
 from TkZero.Entry import Entry
 from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Listbox import Listbox
 from TkZero.Scrollbar import Scrollbar
-from github import GitRelease
-from TkZero.Dialog import show_error, show_info
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager, \
     BUNDLE_REPO, BUNDLES_PATH
-from managers.github_manager import GitHubManager
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from managers.github_manager import GitHubManager
-from ui.dialogs.loading import show_get_releases, show_download_release
+from ui.dialogs.loading import show_download_release
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
@@ -48,15 +46,12 @@ class NoTokenError(Exception):
     """No token has been detected in the OS' keyring"""
 
 
-def make_release_select_frame(gm: GitHubManager,
-                              parent, releases: list[GitRelease]) -> Frame:
+def make_release_select_frame(gm: GitHubManager, parent):
     """
     Make the release select frame and wait until the user selects one
 
     :param gm: A GitHub manager already initialized.
     :param parent: The parent.
-    :param releases: A list of GitReleases.
-    :return: The frame everything was in.
     """
     frame = Frame(parent)
     frame.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NSEW)
@@ -64,13 +59,13 @@ def make_release_select_frame(gm: GitHubManager,
 
     listbox_frame = Frame(frame)
     listbox_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
-    make_resizable(listbox_frame, 1, 0)
+    make_resizable(listbox_frame, range(1, 2), 0)
 
     listbox_label = Label(frame, text="Available releases:")
     listbox_label.grid(row=0, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NW)
 
     values = {}
-    for release in releases:
+    for release in []:
         values[release.title] = release
 
     def update():
@@ -115,6 +110,33 @@ def make_release_select_frame(gm: GitHubManager,
     listbox_scroll = Scrollbar(listbox_frame, widget=listbox)
     listbox_scroll.grid(row=1, column=1, padx=(0, 1), pady=1)
 
+    navigate_frame = Frame(listbox_frame)
+    navigate_frame.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
+    make_resizable(navigate_frame, rows=0, cols=range(6))
+
+    leftest_button = Button(navigate_frame, text="<<")
+    leftest_button.configure(width=3)
+    leftest_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+    left_button = Button(navigate_frame, text="<")
+    left_button.configure(width=3)
+    left_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+    page_entry = Entry(navigate_frame, width=3)
+    page_entry.value = "0"
+    page_entry.grid(row=0, column=2, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
+
+    page_lbl = Label(navigate_frame, text="of unknown pages")
+    page_lbl.grid(row=0, column=3, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
+
+    right_button = Button(navigate_frame, text=">")
+    right_button.configure(width=3)
+    right_button.grid(row=0, column=4, padx=1, pady=1, sticky=tk.NW + tk.E)
+
+    rightest_button = Button(navigate_frame, text=">>")
+    rightest_button.configure(width=3)
+    rightest_button.grid(row=0, column=5, padx=1, pady=1, sticky=tk.NW + tk.E)
+
     button_frame = Frame(frame)
     button_frame.grid(row=1, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
     make_resizable(button_frame, range(0, 4), 0)
@@ -155,7 +177,7 @@ def make_release_select_frame(gm: GitHubManager,
                            detail=str(e))
             else:
                 show_info(parent, title="CircuitPython Bundle Manager v2: Error!",
-                           message="Successfully downloaded release!")
+                          message="Successfully downloaded release!")
             finally:
                 download_dlg.destroy()
                 parent.grab_set()
@@ -169,10 +191,8 @@ def make_release_select_frame(gm: GitHubManager,
     download_button.enabled = False
     download_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
 
-    cancel_button = Button(button_frame, text="Close",
-                           command=parent.close)
+    cancel_button = Button(button_frame, text="Close", command=parent.close)
     cancel_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
-    return frame
 
 
 def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
@@ -191,34 +211,36 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
     dialog = CustomDialog(parent)
     logger.debug("Opening add bundle dialog")
     dialog.title = f"CircuitPython Bundle Manager v2: Add bundle"
-
     make_resizable(dialog, 0, 0)
 
     token = cpybm.cred_manager.get_github_token()
     gm = GitHubManager(token, BUNDLE_REPO, BUNDLES_PATH)
-    fake_frame = make_release_select_frame(gm, dialog, [])
 
-    def on_close():
-        if not gm.got_releases:
-            gm.cancel_get_bundle_releases()
-        dialog.destroy()
+    make_release_select_frame(gm, dialog)
 
-    loading, pb = show_get_releases(dialog, on_close)
-
-    def update_pb(got, total):
-        pb.value = got
-        pb.maximum = total
-
-    def get_and_select_release():
-        logger.debug("Getting releases!")
-        releases = gm.get_bundle_releases(update_pb)
-        loading.destroy()
-        dialog.grab_set()
-        fake_frame.grid_forget()
-        make_release_select_frame(gm, dialog, releases)
-
-    t = Thread(target=get_and_select_release, daemon=True)
-    logger.debug(f"Starting thread {t}")
-    t.start()
+    # fake_frame = make_release_select_frame(gm, dialog, [])
+    #
+    # def on_close():
+    #     if not gm.got_releases:
+    #         gm.cancel_get_bundle_releases()
+    #     dialog.destroy()
+    #
+    # loading, pb = show_get_releases(dialog, on_close)
+    #
+    # def update_pb(got, total):
+    #     pb.value = got
+    #     pb.maximum = total
+    #
+    # def get_and_select_release():
+    #     logger.debug("Getting releases!")
+    #     releases = gm.get_bundle_releases(update_pb)
+    #     loading.destroy()
+    #     dialog.grab_set()
+    #     fake_frame.grid_forget()
+    #     make_release_select_frame(gm, dialog, releases)
+    #
+    # t = Thread(target=get_and_select_release, daemon=True)
+    # logger.debug(f"Starting thread {t}")
+    # t.start()
 
     dialog.wait_till_destroyed()

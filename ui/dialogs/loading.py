@@ -174,9 +174,8 @@ def show_get_releases(parent, on_close: Callable) -> tuple[CustomDialog, Progres
     :param parent: The parent of this window.
     :param on_close: The function to call when this window is closed.
     """
-    return show_determinate(parent, f"Getting all releases",
-                            f"Getting releases available to download...",
-                            on_close)
+    return show_determinate(parent, f"Getting releases",
+                            f"Getting releases...", on_close)
 
 
 def show_download_release(parent) -> tuple[CustomDialog, Progressbar, Label]:

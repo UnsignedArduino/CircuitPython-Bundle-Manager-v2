@@ -20,10 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 from io import BytesIO
-from typing import Callable
-from helpers.file_size import ByteSize
 from json import dumps, loads
 from pathlib import Path
+from typing import Callable
 from zipfile import ZipFile
 
 import requests
@@ -31,6 +30,7 @@ from github import Github
 from github.GitRelease import GitRelease
 
 from helpers.create_logger import create_logger
+from helpers.file_size import ByteSize
 from helpers.sanitizers import filename_sanitize, directory_sanitize
 from helpers.singleton import Singleton
 
@@ -51,56 +51,56 @@ class GitHubManager(metaclass=Singleton):
         self.bundle_path = bundle_path
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
-        self.cancel_get = False
-        self.got_releases = False
-        self.cached_releases = []
-
-    def get_bundle_releases(self, pb_func: Callable) -> list[GitRelease]:
-        """
-        Get all the bundle releases and return a list of them.
-
-        :param pb_func: A function to call to update GUIs, etc. Will be passed
-         2 ints positionally with the first being how far and the second being
-         the total.
-        :return: A list of github.GitRelease.GitRelease
-        """
-        if self.got_releases:
-            logger.debug("Using cached list of releases in memory!")
-            return self.cached_releases
-        self.cancel_get = False
-        self.got_releases = False
-        logger.debug("Getting repo...")
-        repo = self.github.get_repo(self.bundle_repo)
-        logger.debug("Getting releases...")
-        pag_list = repo.get_releases()
-        releases = []
-        total = pag_list.totalCount
-        for index, item in enumerate(pag_list):
-            pb_func(index, total)
-            releases.append(item)
-            if self.cancel_get:
-                logger.debug("Canceled getting releases!")
-                return []
-        logger.debug(f"Got {len(releases)} GitReleases")
-        self.got_releases = True
-        self.cached_releases = releases
-        return releases
-
-    def cancel_get_bundle_releases(self):
-        """
-        Cancel getting the bundle releases.
-        """
-        logger.debug(f"Canceling get bundle releases")
-        self.cancel_get = True
+    #     self.cancel_get = False
+    #     self.got_releases = False
+    #     self.cached_releases = []
+    #
+    # def get_bundle_releases(self, pb_func: Callable) -> list[GitRelease]:
+    #     """
+    #     Get all the bundle releases and return a list of them.
+    #
+    #     :param pb_func: A function to call to update GUIs, etc. Will be passed
+    #      2 ints positionally with the first being how far and the second being
+    #      the total.
+    #     :return: A list of github.GitRelease.GitRelease
+    #     """
+    #     if self.got_releases:
+    #         logger.debug("Using cached list of releases in memory!")
+    #         return self.cached_releases
+    #     self.cancel_get = False
+    #     self.got_releases = False
+    #     logger.debug("Getting repo...")
+    #     repo = self.github.get_repo(self.bundle_repo)
+    #     logger.debug("Getting releases...")
+    #     pag_list = repo.get_releases()
+    #     releases = []
+    #     total = pag_list.totalCount
+    #     for index, item in enumerate(pag_list):
+    #         pb_func(index, total)
+    #         releases.append(item)
+    #         if self.cancel_get:
+    #             logger.debug("Canceled getting releases!")
+    #             return []
+    #     logger.debug(f"Got {len(releases)} GitReleases")
+    #     self.got_releases = True
+    #     self.cached_releases = releases
+    #     return releases
+    #
+    # def cancel_get_bundle_releases(self):
+    #     """
+    #     Cancel getting the bundle releases.
+    #     """
+    #     logger.debug(f"Canceling get bundle releases")
+    #     self.cancel_get = True
 
     def download_release(self, release: GitRelease, pb_func: Callable):
         """
         Download a release into the bundle folder.
 
         :param release: A GitRelease to download from.
-        :param pb_func: A function to call to update GUIs, etc. WIll be passed
+        :param pb_func: A function to call to update GUIs, etc. Will be passed
          2 integers and a string positionally with the first being how far,
-         the second being the toital, and the third being a status bar.
+         the second being the total, and the third being a status bar.
         """
         # To test, I used this code: (Make sure you have GitHub token stored in
         # CredentialManager!)
