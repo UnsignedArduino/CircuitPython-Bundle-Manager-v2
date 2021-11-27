@@ -95,7 +95,11 @@ def show_credential_manager(parent, cpybm: CircuitPythonBundleManager):
 
     def save():
         try:
-            cred.set_github_token(token_entry.value, data.get_key("save_in_keyring"))
+            try:
+                cred.set_github_token(token_entry.value, data.get_key("save_in_keyring"))
+            except KeyError:
+                cred.set_github_token(token_entry.value, False)
+                data.set_key("save_in_keyring", False)
         except Exception as e:
             show_error(dialog, title="CircuitPython Bundle Manager v2: Error!",
                        message="There was an error saving the GitHub token!",
