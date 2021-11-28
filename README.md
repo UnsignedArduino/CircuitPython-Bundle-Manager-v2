@@ -20,10 +20,9 @@ Here are some quick instructions, for more detailed and through instructions
 go to the 
 [wiki](https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki/Installation).
 
-### Install from ZIP
+### Install from binary
 
-There will be ZIP files that you can just pass into the Python interpreter 
-eventually! (once I get a release in)
+There will be executables eventually!
 
 ### Install from source
 
