@@ -22,7 +22,13 @@ go to the
 
 ### Install from binary
 
-There will be executables eventually!
+Download a 
+[release](https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/releases) 
+for your platform. (I only can test and build on Windows and Debian - sorry!)
+Then extract it to somewhere convenient. (Like a drive where all your projects
+go, or the home directory) Then run the binary inside the directory! (
+`CircuitPython_Bundle_Manager.exe` for Windows, `CircuitPython_Bundle_Manager` 
+for Debian)
 
 ### Install from source
 
