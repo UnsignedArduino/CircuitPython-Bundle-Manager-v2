@@ -21,3 +21,11 @@ cp "icon.png" "dist/CircuitPython_Bundle_Manager_v2"
 
 cd dist/CircuitPython_Bundle_Manager_v2
 chmod +x CircuitPython_Bundle_Manager_v2
+
+# Get out of the directory
+
+cd ..
+
+# Compress the folder into a .tar.gz file for distribution
+
+tar -czvf CircuitPython_Bundle_Manager_v2.tar.gz CircuitPython_Bundle_Manager_v2
