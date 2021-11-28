@@ -59,11 +59,6 @@ class AddBundleDialog(CustomDialog):
         """
         super().__init__(parent)
         self.cpybm = cpybm
-        if not cpybm.cred_manager.has_github_token():
-            raise NoTokenError("No token has been detected! Please go to "
-                               "Other --> Go to credential settings --> Open "
-                               "credential manager and fill and save a valid "
-                               "GitHub token!")
         logger.debug("Opening add bundle dialog")
         self.title = "CircuitPython Bundle Manager v2: Add bundle"
         self.token = cpybm.cred_manager.get_github_token()
@@ -283,4 +278,12 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
     :param parent: The parent of this window.
     :param cpybm: The CircuitPythonBundleManager instance.
     """
-    AddBundleDialog(parent, cpybm)
+    if not cpybm.cred_manager.has_github_token():
+        raise NoTokenError("No token has been detected! Please go to "
+                           "Other --> Go to credential settings --> Open "
+                           "credential manager and fill and save a valid "
+                           "GitHub token!")
+    try:
+        dlg = AddBundleDialog(parent, cpybm)
+    finally:
+        dlg.destroy()
