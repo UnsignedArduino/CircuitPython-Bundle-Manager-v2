@@ -2,4 +2,5 @@ keyring
 PyGithub
 requests
 arrow
+Pillow
 TkZero
