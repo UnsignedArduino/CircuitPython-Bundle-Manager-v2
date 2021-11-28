@@ -72,7 +72,9 @@ class AddBundleDialog(CustomDialog):
         self.curr_page = 0
         self.max_page = self.gm.max_page
         self.create_gui()
+        self.grab_set()
         self.wait_till_destroyed()
+        self.grab_release()
 
     def make_sidebar(self):
         """
