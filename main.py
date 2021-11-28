@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
 import logging
 
 from constants import *
@@ -25,16 +24,25 @@ from gui import CircuitPythonBundleManagerGUI
 from TkZero.Dialog import show_error
 from helpers.create_logger import create_logger
 
-logger = create_logger(name=__name__, level=logging.DEBUG)
 
-logger.debug(f"Path to settings file is {SETTINGS_PATH}")
+def main():
+    """
+    The main program
+    """
+    logger = create_logger(name=__name__, level=logging.DEBUG)
 
-gui = CircuitPythonBundleManagerGUI(SETTINGS_PATH)
-try:
-    gui.lift()
-    logger.debug("Starting event loop")
-    gui.mainloop()
-except Exception as e:
-    show_error(gui, title="CircuitPython Bundle Manager: Error!",
-               message=f"Fatel error encountered!",
-               detail=str(e))
+    logger.debug(f"Path to settings file is {SETTINGS_PATH}")
+
+    gui = CircuitPythonBundleManagerGUI(SETTINGS_PATH)
+    try:
+        gui.lift()
+        logger.debug("Starting event loop")
+        gui.mainloop()
+    except Exception as e:
+        show_error(gui, title="CircuitPython Bundle Manager: Error!",
+                   message=f"Fatal error encountered!",
+                   detail=str(e))
+
+
+if __name__ == "__main__":
+    main()
