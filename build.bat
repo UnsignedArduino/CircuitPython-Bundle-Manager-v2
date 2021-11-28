@@ -7,7 +7,7 @@ REM Build
 pyinstaller main.py --name "CircuitPython_Bundle_Manager_v2" ^
                     --icon="icon.ico" --noconfirm --clean
 
-REM Copy the neccessary files
+REM Copy the necessary files
 
 COPY "LICENSE" "dist/CircuitPython_Bundle_Manager_v2" /Y
 COPY "icon.png" "dist/CircuitPython_Bundle_Manager_v2" /Y
