@@ -1,2 +1,7 @@
+# From the program
 bundles
 settings.json
+# From building
+*.spec
+build
+dist
