@@ -31,6 +31,7 @@ from TkZero.Frame import Frame
 from TkZero.Label import Label
 from TkZero.Listbox import Listbox
 from TkZero.Scrollbar import Scrollbar
+from github.GithubException import BadCredentialsException
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager, \
     BUNDLE_REPO, BUNDLES_PATH
@@ -42,14 +43,11 @@ from ui.dialogs.loading import show_download_release
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
-class NoTokenError(Exception):
-    """No token has been detected in the OS' keyring"""
-
-
 class AddBundleDialog(CustomDialog):
     """
     A dialog that shows all the releases you can download.
     """
+
     def __init__(self, parent, cpybm: CircuitPythonBundleManager):
         """
         Initialize the AddBundleDialog
@@ -61,8 +59,35 @@ class AddBundleDialog(CustomDialog):
         self.cpybm = cpybm
         logger.debug("Opening add bundle dialog")
         self.title = "CircuitPython Bundle Manager v2: Add bundle"
+        if not cpybm.cred_manager.has_github_token():
+            logger.warning("No token found!")
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="No token has been detected! Please go to "
+                               "Other --> Go to credential settings --> Open "
+                               "credential manager and fill and save a valid "
+                               "GitHub token!")
+            self.destroy()
+            return
         self.token = cpybm.cred_manager.get_github_token()
-        self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
+        try:
+            self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
+        except BadCredentialsException as e:
+            logger.exception("Bad token!")
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="Bad token! Please go to Other --> Go to "
+                               "credential settings --> Open credential "
+                               "manager and fill and save a valid GitHub "
+                               "token!",
+                       detail=str(e))
+            self.destroy()
+            return
+        except Exception as e:
+            logger.exception("Error while authenticating with GitHub!")
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="Error while authenticating with GitHub!",
+                       detail=str(e))
+            self.destroy()
+            return
         self.values = {}
         self.curr_page = 0
         self.max_page = self.gm.max_page
@@ -79,12 +104,15 @@ class AddBundleDialog(CustomDialog):
         button_frame.grid(row=1, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
         make_resizable(button_frame, range(0, 4), 0)
 
-        self.open_url_button = Button(button_frame, text="Open release on GitHub")
+        self.open_url_button = Button(button_frame,
+                                      text="Open release on GitHub")
         self.open_url_button.enabled = False
-        self.open_url_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.open_url_button.grid(row=0, column=0, padx=1, pady=1,
+                                  sticky=tk.NW + tk.E)
 
         version_frame = Frame(button_frame)
-        version_frame.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        version_frame.grid(row=1, column=0, padx=1, pady=1,
+                           sticky=tk.NW + tk.E)
         make_resizable(version_frame, 0, 1)
 
         self.versions_label = Label(version_frame, text="Versions available: ")
@@ -92,7 +120,8 @@ class AddBundleDialog(CustomDialog):
 
         self.versions_entry = Entry(version_frame, width=25)
         self.versions_entry.read_only = True
-        self.versions_entry.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.versions_entry.grid(row=0, column=1, padx=1, pady=1,
+                                 sticky=tk.NW + tk.E)
 
         def download():
             download_dlg, pb, lbl = show_download_release(self)
@@ -127,12 +156,16 @@ class AddBundleDialog(CustomDialog):
             logger.debug(f"Starting thread {t}")
             t.start()
 
-        self.download_button = Button(button_frame, text="Download", command=download)
+        self.download_button = Button(button_frame, text="Download",
+                                      command=download)
         self.download_button.enabled = False
-        self.download_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.download_button.grid(row=2, column=0, padx=1, pady=1,
+                                  sticky=tk.NW + tk.E)
 
-        self.cancel_button = Button(button_frame, text="Close", command=self.close)
-        self.cancel_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.cancel_button = Button(button_frame, text="Close",
+                                    command=self.close)
+        self.cancel_button.grid(row=3, column=0, padx=1, pady=1,
+                                sticky=tk.NW + tk.E)
 
     def update_sidebar(self):
         """
@@ -193,10 +226,12 @@ class AddBundleDialog(CustomDialog):
         make_resizable(listbox_frame, range(1, 2), 0)
 
         listbox_label = Label(self, text="Available releases:")
-        listbox_label.grid(row=0, column=0, columnspan=2, padx=1, pady=1, sticky=tk.NW)
+        listbox_label.grid(row=0, column=0, columnspan=2, padx=1, pady=1,
+                           sticky=tk.NW)
 
         self.listbox = Listbox(listbox_frame, values=list(self.values.keys()),
-                               height=10, width=30, on_select=self.update_sidebar)
+                               height=10, width=30,
+                               on_select=self.update_sidebar)
         self.listbox.grid(row=1, column=0, padx=(1, 0), pady=1, sticky=tk.NSEW)
 
         listbox_scroll = Scrollbar(listbox_frame, widget=self.listbox)
@@ -206,24 +241,37 @@ class AddBundleDialog(CustomDialog):
         navigate_frame.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
         make_resizable(navigate_frame, rows=0, cols=range(6))
 
-        self.leftest_button = Button(navigate_frame, text="<<", command=lambda: self.change_page(0))
+        self.leftest_button = Button(navigate_frame, text="<<",
+                                     command=lambda: self.change_page(0))
         self.leftest_button.configure(width=3)
-        self.leftest_button.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.leftest_button.grid(row=0, column=0, padx=1, pady=1,
+                                 sticky=tk.NW + tk.E)
 
-        self.left_button = Button(navigate_frame, text="<", command=lambda: self.change_page(self.curr_page - 1))
+        self.left_button = Button(navigate_frame, text="<",
+                                  command=lambda: self.change_page(
+                                      self.curr_page - 1))
         self.left_button.configure(width=3)
-        self.left_button.grid(row=0, column=1, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.left_button.grid(row=0, column=1, padx=1, pady=1,
+                              sticky=tk.NW + tk.E)
 
-        self.page_lbl = Label(navigate_frame, text=f"{self.curr_page + 1}/{self.max_page} pages")
-        self.page_lbl.grid(row=0, column=3, padx=1, pady=(3, 1), sticky=tk.NW + tk.E)
+        self.page_lbl = Label(navigate_frame,
+                              text=f"{self.curr_page + 1}/{self.max_page} pages")
+        self.page_lbl.grid(row=0, column=3, padx=1, pady=(3, 1),
+                           sticky=tk.NW + tk.E)
 
-        self.right_button = Button(navigate_frame, text=">", command=lambda: self.change_page(self.curr_page + 1))
+        self.right_button = Button(navigate_frame, text=">",
+                                   command=lambda: self.change_page(
+                                       self.curr_page + 1))
         self.right_button.configure(width=3)
-        self.right_button.grid(row=0, column=4, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.right_button.grid(row=0, column=4, padx=1, pady=1,
+                               sticky=tk.NW + tk.E)
 
-        self.rightest_button = Button(navigate_frame, text=">>", command=lambda: self.change_page(self.max_page - 1))
+        self.rightest_button = Button(navigate_frame, text=">>",
+                                      command=lambda: self.change_page(
+                                          self.max_page - 1))
         self.rightest_button.configure(width=3)
-        self.rightest_button.grid(row=0, column=5, padx=1, pady=1, sticky=tk.NW + tk.E)
+        self.rightest_button.grid(row=0, column=5, padx=1, pady=1,
+                                  sticky=tk.NW + tk.E)
 
     def update_navigation(self):
         """
@@ -278,12 +326,4 @@ def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
     :param parent: The parent of this window.
     :param cpybm: The CircuitPythonBundleManager instance.
     """
-    if not cpybm.cred_manager.has_github_token():
-        raise NoTokenError("No token has been detected! Please go to "
-                           "Other --> Go to credential settings --> Open "
-                           "credential manager and fill and save a valid "
-                           "GitHub token!")
-    try:
-        dlg = AddBundleDialog(parent, cpybm)
-    finally:
-        dlg.destroy()
+    AddBundleDialog(parent, cpybm)
