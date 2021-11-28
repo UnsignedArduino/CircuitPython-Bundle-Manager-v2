@@ -32,6 +32,7 @@ from TkZero.Notebook import Tab, Notebook
 from TkZero.Style import define_style, WidgetStyleRoots
 
 from circuitpython_bundle_manager import CircuitPythonBundleManager
+from managers.credential_manager import HAS_SYS_KEYRING
 from constants import *
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
@@ -202,15 +203,22 @@ class OtherTab(Tab):
             else:
                 keyring_in_mem_lbl.text = f"Keyring in memory: No"
                 keyring_in_mem_lbl.apply_style("unset")
-            keyring_in_os_lbl.text = f"Keyring in OS' credential manager: {'Yes' if self.cpybm.cred_manager.has_github_token(in_keyring=True) else 'No'}"
+            if HAS_SYS_KEYRING:
+                keyring_in_os_lbl.text = f"Keyring in OS' credential manager: {'Yes' if self.cpybm.cred_manager.has_github_token(in_keyring=True) else 'No'}"
+            else:
+                keyring_in_os_lbl.text = f"Keyring in OS' credential manager: No system keyring found!"
+                keyring_in_os_lbl.enabled = False
 
         update_statuses()
 
         save_in_keyring_chkbtn = Checkbutton(actual_cred_frame,
                                              text="Save in the OS' credential manager",
                                              command=lambda: self.cpybm.data_manager.set_key("save_in_keyring", save_in_keyring_chkbtn.value))
-        if self.cpybm.data_manager.has_key("save_in_keyring"):
-            save_in_keyring_chkbtn.value = self.cpybm.data_manager.get_key("save_in_keyring")
+        if HAS_SYS_KEYRING:
+            if self.cpybm.data_manager.has_key("save_in_keyring"):
+                save_in_keyring_chkbtn.value = self.cpybm.data_manager.get_key("save_in_keyring")
+        else:
+            save_in_keyring_chkbtn.enabled = False
         save_in_keyring_chkbtn.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NW)
         keyring_warning_lbl = Label(
             actual_cred_frame,
@@ -222,6 +230,7 @@ class OtherTab(Tab):
                  "key if you only want to \nkeep the key in memory."
         )
         keyring_warning_lbl.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NW)
+        keyring_warning_lbl.enabled = HAS_SYS_KEYRING
         go_back_button = Button(self.cred_frame, text="Go back to main settings",
                                 command=self.hide_credentials_frame)
         go_back_button.grid(row=1, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)

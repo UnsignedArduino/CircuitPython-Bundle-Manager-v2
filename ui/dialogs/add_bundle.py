@@ -146,7 +146,7 @@ class AddBundleDialog(CustomDialog):
                                detail=str(e))
                 else:
                     show_info(self,
-                              title="CircuitPython Bundle Manager v2: Error!",
+                              title="CircuitPython Bundle Manager v2: Info",
                               message="Successfully downloaded release!")
                 finally:
                     download_dlg.destroy()

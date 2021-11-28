@@ -22,11 +22,20 @@ import logging
 from typing import Union
 
 import keyring
+from keyring.backends import fail
 
 from helpers.create_logger import create_logger
 from helpers.singleton import Singleton
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
+
+HAS_SYS_KEYRING = False
+kr = keyring.get_keyring()
+if isinstance(kr, fail.Keyring):
+    logger.warning("No keyring found!")
+else:
+    logger.debug(f"Using keyring: {kr}")
+    HAS_SYS_KEYRING = True
 
 
 class CredentialManager(metaclass=Singleton):
@@ -77,6 +86,11 @@ class CredentialManager(metaclass=Singleton):
          for a token.
         :return: A bool.
         """
+        if not HAS_SYS_KEYRING:
+            if in_keyring:
+                return False
+            else:
+                return self.github_token is not None
         if in_keyring:
             return keyring.get_password(self.service_name, self.github_token_name) is not None
         else:
