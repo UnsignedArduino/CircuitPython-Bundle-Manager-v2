@@ -64,5 +64,6 @@ def show_text(parent, title: str, text: str):
     y.grid(row=0, column=1, padx=1, pady=1)
     x = Scrollbar(dlg, orientation=OrientModes.Horizontal, widget=txt)
     x.grid(row=1, column=0, padx=1, pady=1)
+    dlg.bind("<Escape>", lambda _: dlg.close())
     dlg.grab_focus()
     dlg.wait_till_destroyed()

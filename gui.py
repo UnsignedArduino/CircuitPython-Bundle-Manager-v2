@@ -22,6 +22,7 @@ import logging
 import tkinter as tk
 
 from PIL.ImageTk import PhotoImage
+from TkZero.Dialog import ask_yes_or_no
 from TkZero.MainWindow import MainWindow
 from TkZero.Notebook import Notebook
 
@@ -50,6 +51,16 @@ class CircuitPythonBundleManagerGUI(MainWindow):
         self.create_gui()
         self.title = "CircuitPython Bundle Manager v2"
         self.load_icon()
+        self.bind("<Escape>", lambda _: self.on_close_func())
+
+    def on_close_func(self):
+        """
+        Asks if we really want to exit then exit if yes
+        """
+        if ask_yes_or_no(self,
+                         title="CircuitPython Bundle Manager v2: Confirm",
+                         message="Are you really sure you want to exit?"):
+            self.destroy()
 
     def create_gui(self):
         """
