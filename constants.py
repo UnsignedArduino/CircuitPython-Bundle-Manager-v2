@@ -26,4 +26,5 @@ LICENSE_PATH = Path.cwd() / "LICENSE"
 
 PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2"
 DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
+ISSUE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/issues"
 LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/blob/main/LICENSE"

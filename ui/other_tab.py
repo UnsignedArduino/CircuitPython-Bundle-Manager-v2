@@ -150,6 +150,14 @@ class OtherTab(Tab):
             other_command=lambda: self.copy_to_clipboard(DOCUMENTATION_URL)
         )
         open_docs_button.grid(row=2, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_issue_button = self.make_switching_button(
+            parent=self.main_frame,
+            text="Open issues page online in default browser",
+            command=lambda: webbrowser.open(ISSUE_URL),
+            other_text="Copy URL to issues page",
+            other_command=lambda: self.copy_to_clipboard(ISSUE_URL)
+        )
+        open_issue_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
         open_license_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open license",
@@ -157,7 +165,7 @@ class OtherTab(Tab):
             other_text="Copy URL to license online",
             other_command=lambda: self.copy_to_clipboard(LICENSE_URL)
         )
-        open_license_button.grid(row=3, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_license_button.grid(row=4, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
         open_json_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open settings file in default JSON application",
@@ -165,7 +173,7 @@ class OtherTab(Tab):
             other_text="Copy path to settings file to clipboard",
             other_command=lambda: self.copy_to_clipboard(str(self.settings_path))
         )
-        open_json_button.grid(row=4, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
+        open_json_button.grid(row=5, column=0, padx=1, pady=1, sticky=tk.SW + tk.E)
 
     def show_main_frame(self):
         """
