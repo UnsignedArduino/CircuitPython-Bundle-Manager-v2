@@ -63,6 +63,7 @@ class OtherTab(Tab):
         self.switching_buttons = []
         define_style(style_root=WidgetStyleRoots.Label, style_name="unset",
                      foreground="#FF0000")
+        self.shift_pressed = False
         self.make_gui()
 
     def make_gui(self):
@@ -79,11 +80,24 @@ class OtherTab(Tab):
         self.bind_all("<KeyPress-Shift_R>", lambda _: self.on_shift())
         self.bind_all("<KeyRelease-Shift_L>", lambda _: self.off_shift())
         self.bind_all("<KeyRelease-Shift_R>", lambda _: self.off_shift())
+        self.bind_all("<KeyPress-F1>", lambda _: self.f1_bind())
+
+    def f1_bind(self):
+        """
+        Open the online documentation when the F1 key is pressed.
+        """
+        if self.shift_pressed:
+            logger.debug(f"Copying {DOCUMENTATION_URL} to clipboard")
+            self.copy_to_clipboard(DOCUMENTATION_URL)
+        else:
+            logger.debug(f"Opening {DOCUMENTATION_URL} in default browser")
+            webbrowser.open(DOCUMENTATION_URL)
 
     def on_shift(self):
         """
         Update some buttons to change behavior on shift key pressed.
         """
+        self.shift_pressed = True
         for button in self.switching_buttons:
             button.text = button.other_text
             button.configure(command=button.other_command)
@@ -92,6 +106,7 @@ class OtherTab(Tab):
         """
         Update some buttons to change behavior on shift key released.
         """
+        self.shift_pressed = False
         for button in self.switching_buttons:
             button.text = button.regular_text
             button.configure(command=button.regular_command)
