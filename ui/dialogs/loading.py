@@ -58,7 +58,10 @@ def show_indeterminate(parent, title: str, label: str,
 
     dialog.resizable(False, False)
 
+    dialog.lift()
+    dialog.focus_force()
     dialog.grab_focus()
+
     return dialog
 
 
@@ -87,7 +90,10 @@ def show_determinate(parent, title: str, label: str,
 
     dialog.resizable(False, False)
 
+    dialog.lift()
+    dialog.focus_force()
     dialog.grab_focus()
+
     return dialog, pb
 
 
@@ -119,7 +125,10 @@ def show_determinate_with_label(parent, title: str, label: str,
 
     dialog.resizable(False, False)
 
+    dialog.lift()
+    dialog.focus_force()
     dialog.grab_focus()
+
     return dialog, pb, progress_label
 
 

@@ -88,5 +88,7 @@ def show_bundle_info(parent, bundle: Bundle):
 
     dialog.bind("<Escape>", lambda _: dialog.close())
 
+    dialog.lift()
+    dialog.focus_force()
     dialog.grab_focus()
     dialog.wait_till_destroyed()

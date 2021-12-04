@@ -149,5 +149,7 @@ def show_credential_manager(parent, cpybm: CircuitPythonBundleManager):
     dialog.resizable(True, False)
     dialog.bind("<Escape>", lambda _: dialog.close())
 
+    dialog.lift()
+    dialog.focus_force()
     dialog.grab_focus()
     dialog.wait_till_destroyed()
