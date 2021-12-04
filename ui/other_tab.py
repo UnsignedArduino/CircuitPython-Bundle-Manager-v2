@@ -176,7 +176,7 @@ class OtherTab(Tab):
         open_license_button = self.make_switching_button(
             parent=self.main_frame,
             text="Open license",
-            command=lambda: show_text_file(self, "GPL-3.0 License", LICENSE_PATH),
+            command=lambda: show_text_file(self, "GPL-3.0 License", LICENSE_PATH, 72, 20),
             other_text="Copy URL to license online",
             other_command=lambda: self.copy_to_clipboard(LICENSE_URL)
         )
