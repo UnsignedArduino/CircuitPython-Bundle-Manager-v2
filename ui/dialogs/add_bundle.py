@@ -69,33 +69,17 @@ class AddBundleDialog(CustomDialog):
             self.destroy()
             return
         self.token = cpybm.cred_manager.get_github_token()
-        try:
-            self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
-        except BadCredentialsException as e:
-            logger.exception("Bad token!")
-            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
-                       message="Bad token! Please go to Other --> Go to "
-                               "credential settings --> Open credential "
-                               "manager and fill and save a valid GitHub "
-                               "token!",
-                       detail=str(e))
-            self.destroy()
-            return
-        except Exception as e:
-            logger.exception("Error while authenticating with GitHub!")
-            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
-                       message="Error while authenticating with GitHub!",
-                       detail=str(e))
-            self.destroy()
-            return
         self.values = {}
         self.curr_page = 0
-        self.max_page = self.gm.max_page
+        self.max_page = 0
         self.create_gui()
         self.bind("<Escape>", lambda _: self.close())
+        self.enabled = False
         self.lift()
         self.focus_force()
         self.grab_focus()
+        self.update_idletasks()
+        self.after(10, lambda: self.update_first_time())
         self.wait_till_destroyed()
 
     def make_sidebar(self):
@@ -316,9 +300,37 @@ class AddBundleDialog(CustomDialog):
         """
         self.make_listbox()
         self.make_sidebar()
+
+    def update_first_time(self):
+        """
+        Update the GUI for the first time.
+        """
+        self.update_idletasks()
+        try:
+            self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
+        except BadCredentialsException as e:
+            logger.exception("Bad token!")
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="Bad token! Please go to Other --> Go to "
+                               "credential settings --> Open credential "
+                               "manager and fill and save a valid GitHub "
+                               "token!",
+                       detail=str(e))
+            self.destroy()
+            return
+        except Exception as e:
+            logger.exception("Error while authenticating with GitHub!")
+            show_error(self, title="CircuitPython Bundle Manager v2: Error!",
+                       message="Error while authenticating with GitHub!",
+                       detail=str(e))
+            self.destroy()
+            return
+        self.max_page = self.gm.max_page
+        self.update_page()
+        self.enabled = True
         self.update_sidebar()
         self.update_navigation()
-        self.update_page()
+        self.update_idletasks()
 
 
 def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
