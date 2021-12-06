@@ -60,6 +60,7 @@ class AddBundleDialog(CustomDialog):
         """
         super().__init__(parent)
         self.cpybm = cpybm
+        self.use_community = use_community
         self.repo = COMMUNITY_REPO if use_community else BUNDLE_REPO
         logger.debug(f"Using repo {self.repo}")
         logger.debug("Opening add bundle dialog")
@@ -314,7 +315,7 @@ class AddBundleDialog(CustomDialog):
         """
         self.update_idletasks()
         try:
-            self.gm = GitHubManager(self.token, self.repo, BUNDLES_PATH)
+            self.gm = GitHubManager(self.token, self.repo, BUNDLES_PATH, self.use_community)
         except BadCredentialsException as e:
             logger.exception("Bad token!")
             show_error(self, title="CircuitPython Bundle Manager v2: Error!",

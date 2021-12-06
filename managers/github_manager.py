@@ -38,17 +38,21 @@ logger = create_logger(name=__name__, level=logging.DEBUG)
 
 
 class GitHubManager(metaclass=Singleton):
-    def __init__(self, token: str, bundle_repo: str, bundle_path: Path):
+    def __init__(self, token: str, bundle_repo: str, bundle_path: Path,
+                 is_community: bool = False):
         """
         Make a GitHub manager.
 
         :param token: The token to use to authenticate with the GitHub APIs.
         :param bundle_repo: The repo to download releases from.
         :param bundle_path: The path to where bundles are stored.
+        :param is_community: A bool on whether this repo is the community
+         bundle or not.
         """
         self.token = token
         self.bundle_repo = bundle_repo
         self.bundle_path = bundle_path
+        self.is_community = is_community
         logger.debug("Authenticating with GitHub")
         self.github = Github(token)
         logger.debug("Getting repo...")
@@ -84,17 +88,17 @@ class GitHubManager(metaclass=Singleton):
         logger.debug(f"Downloading {release}")
         assets = list(release.get_assets())
         bundle_metadata = {
-            "title": release.title,
+            "title": release.title + (" (community)" if self.is_community else ""),
             "tag_name": release.tag_name,
             "url": release.html_url,
             "released": release.published_at.timestamp()
         }
         self.bundle_path.mkdir(exist_ok=True)
-        path = self.bundle_path / directory_sanitize(release.title)
+        path = self.bundle_path / directory_sanitize(
+            release.title + (" (community)" if self.is_community else "")
+        )
         logger.debug(f"Path to new bundle is {path}")
         path.mkdir()
-        if len(list(path.iterdir())) > 0:
-            raise FileExistsError("Bundle already exists!")
         for asset in assets:
             url = asset.browser_download_url
             logger.debug(f"Downloading {url}")
