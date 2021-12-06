@@ -382,9 +382,8 @@ def select_bundle_version(parent) -> Union[bool, None]:
                         command=lambda: select(None))
     cancel_btn.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NSEW)
 
-    explanation_lbl = Label(dlg, text="If you are unsure of which on to\n"
-                                      "pick, you probably want the\n"
-                                      "Adafruit CircuitPython Bundle. ")
+    explanation_lbl = Label(dlg, text="If you are unsure of which on to pick, you probably\n"
+                                      "want the Adafruit CircuitPython Bundle. ")
     explanation_lbl.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NSEW)
 
     dlg.bind("<Escape>", lambda _: dlg.close())
