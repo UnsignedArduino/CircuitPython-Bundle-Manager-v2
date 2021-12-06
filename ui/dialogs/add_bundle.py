@@ -79,6 +79,7 @@ class AddBundleDialog(CustomDialog):
         self.values = {}
         self.curr_page = 0
         self.max_page = 0
+        make_resizable(self, cols=range(2), rows=1)
         self.create_gui()
         self.bind("<Escape>", lambda _: self.close())
         self.enabled = False
