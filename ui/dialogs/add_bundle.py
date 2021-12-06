@@ -83,9 +83,10 @@ class AddBundleDialog(CustomDialog):
         self.create_gui()
         self.bind("<Escape>", lambda _: self.close())
         self.enabled = False
-        self.lift()
-        self.focus_force()
-        self.grab_focus()
+        # self.lift()
+        # self.focus_force()
+        # self.grab_focus()
+        self.after(0, lambda: (self.lift(), self.focus_force(), self.grab_focus()))
         self.update_idletasks()
         self.after(10, lambda: self.update_first_time())
         self.wait_till_destroyed()
