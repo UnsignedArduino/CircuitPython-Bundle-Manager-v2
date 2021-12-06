@@ -40,4 +40,6 @@ LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v
 SERVICE_NAME = "CircuitPython Bundle Manager v2"
 GITHUB_TOKEN_NAME = "github_token"
 BUNDLE_REPO = "adafruit/Adafruit_CircuitPython_Bundle"
-
+BUNDLE_NAME = "Adafruit CircuitPython Bundle"
+COMMUNITY_REPO = "adafruit/CircuitPython_Community_Bundle"
+COMMUNITY_NAME = "CircuitPython Community Bundle"

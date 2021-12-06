@@ -35,7 +35,7 @@ from TkZero.Separator import Separator, OrientModes
 from circuitpython_bundle_manager import CircuitPythonBundleManager
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
-from ui.dialogs.add_bundle import add_bundle_dialog
+from ui.dialogs.add_bundle import add_bundle_dialog, select_bundle_version
 from ui.dialogs.bundle_info import show_bundle_info
 from ui.dialogs.loading import show_deleting
 
@@ -112,7 +112,12 @@ class BundleTab(Tab):
         Download a new bundle.
         """
         try:
-            add_bundle_dialog(self, self.cpybm)
+            use_community = select_bundle_version(self)
+            if use_community is None:
+                logger.debug(f"Canceling!")
+                return
+            logger.debug(f"Use community repo: {use_community}")
+            add_bundle_dialog(self, self.cpybm, use_community)
         except tk.TclError:
             pass
         except Exception as e:

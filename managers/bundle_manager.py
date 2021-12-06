@@ -87,6 +87,7 @@ class Bundle:
         for bundle in self.bundle_paths:
             version = bundle.name
             version = version.replace("adafruit-circuitpython-bundle-", "")
+            version = version.replace("circuitpython-community-bundle-", "")
             version = version.replace(f"-{self.tag_name}", "")
             modules_path = bundle / "lib"
             logger.debug(f"Found {len(list(modules_path.glob('*')))} modules "
@@ -112,6 +113,7 @@ class Bundle:
         for bundle in self.bundle_paths:
             name = bundle.name
             name = name.replace("adafruit-circuitpython-bundle-", "")
+            name = name.replace("circuitpython-community-bundle-", "")
             name = name.replace(f"-{self.tag_name}", "")
             logger.debug(f"Found bundle version: {name}")
             self.versions.append(name)

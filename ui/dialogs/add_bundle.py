@@ -22,6 +22,7 @@ import logging
 import tkinter as tk
 import webbrowser
 from threading import Thread
+from typing import Union
 
 from TkZero.Button import Button
 from TkZero.Dialog import CustomDialog
@@ -33,8 +34,8 @@ from TkZero.Listbox import Listbox
 from TkZero.Scrollbar import Scrollbar
 from github.GithubException import BadCredentialsException
 
-from circuitpython_bundle_manager import CircuitPythonBundleManager, \
-    BUNDLE_REPO, BUNDLES_PATH
+from circuitpython_bundle_manager import CircuitPythonBundleManager
+from constants import *
 from helpers.create_logger import create_logger
 from helpers.resize import make_resizable
 from managers.github_manager import GitHubManager
@@ -48,17 +49,22 @@ class AddBundleDialog(CustomDialog):
     A dialog that shows all the releases you can download.
     """
 
-    def __init__(self, parent, cpybm: CircuitPythonBundleManager):
+    def __init__(self, parent, cpybm: CircuitPythonBundleManager,
+                 use_community: bool = False):
         """
         Initialize the AddBundleDialog
 
         :param parent: The parent of this dialog.
         :param cpybm: The CircuitPythonBundleManager instance.
+        :param use_community: Whether to use the community bundle repo
         """
         super().__init__(parent)
         self.cpybm = cpybm
+        self.repo = COMMUNITY_REPO if use_community else BUNDLE_REPO
+        logger.debug(f"Using repo {self.repo}")
         logger.debug("Opening add bundle dialog")
-        self.title = "CircuitPython Bundle Manager v2: Add bundle"
+        self.title = f"CircuitPython Bundle Manager v2: Select release " \
+                     f"from {COMMUNITY_NAME if use_community else BUNDLE_NAME}"
         if not cpybm.cred_manager.has_github_token():
             logger.warning("No token found!")
             show_error(self, title="CircuitPython Bundle Manager v2: Error!",
@@ -184,6 +190,7 @@ class AddBundleDialog(CustomDialog):
             if "-mpy-" not in name and "-py-" not in name:
                 continue
             show_name = name.replace("adafruit-circuitpython-bundle-", "")
+            show_name = show_name.replace("circuitpython-community-bundle-", "")
             show_name = show_name.replace(
                 f"-{selected_release.tag_name}.zip", "")
             versions.append(show_name)
@@ -307,7 +314,7 @@ class AddBundleDialog(CustomDialog):
         """
         self.update_idletasks()
         try:
-            self.gm = GitHubManager(self.token, BUNDLE_REPO, BUNDLES_PATH)
+            self.gm = GitHubManager(self.token, self.repo, BUNDLES_PATH)
         except BadCredentialsException as e:
             logger.exception("Bad token!")
             show_error(self, title="CircuitPython Bundle Manager v2: Error!",
@@ -333,11 +340,60 @@ class AddBundleDialog(CustomDialog):
         self.update_idletasks()
 
 
-def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager):
+def add_bundle_dialog(parent, cpybm: CircuitPythonBundleManager,
+                      use_community: bool = False):
     """
     Pop up a dialog to guide users on downloading a new bundle.
 
     :param parent: The parent of this window.
     :param cpybm: The CircuitPythonBundleManager instance.
+    :param use_community: Whether to use the community bundle repo or not.
     """
-    AddBundleDialog(parent, cpybm)
+    AddBundleDialog(parent, cpybm, use_community)
+
+
+def select_bundle_version(parent) -> Union[bool, None]:
+    """
+    Pop up a dialog for users to select either the regular or community
+    bundle.
+
+    :param parent: The parent of this window.
+    :return: A bool on whether to use the community version of not, or None if
+     canceled.
+    """
+    dlg = CustomDialog(parent)
+    dlg.title = "Select bundle repo"
+
+    make_resizable(dlg, cols=0, rows=range(1, 4))
+
+    select_lbl = Label(dlg, text="Select the bundle repository to use: ")
+    select_lbl.grid(row=0, column=0, padx=1, pady=1, sticky=tk.NW)
+
+    def select(use_community):
+        dlg.version = use_community
+        dlg.close()
+
+    regular_btn = Button(dlg, text=BUNDLE_NAME, command=lambda: select(False))
+    regular_btn.grid(row=1, column=0, padx=1, pady=1, sticky=tk.NSEW)
+    community_btn = Button(dlg, text=COMMUNITY_NAME, command=lambda: select(True))
+    community_btn.grid(row=2, column=0, padx=1, pady=1, sticky=tk.NSEW)
+    cancel_btn = Button(dlg, text="Cancel",
+                        command=lambda: select(None))
+    cancel_btn.grid(row=3, column=0, padx=1, pady=1, sticky=tk.NSEW)
+
+    explanation_lbl = Label(dlg, text="If you are unsure of which on to\n"
+                                      "pick, you probably want the\n"
+                                      "Adafruit CircuitPython Bundle. ")
+    explanation_lbl.grid(row=4, column=0, padx=1, pady=1, sticky=tk.NSEW)
+
+    dlg.bind("<Escape>", lambda _: dlg.close())
+    dlg.lift()
+    dlg.focus_force()
+    dlg.grab_focus()
+    dlg.update_idletasks()
+    dlg.wait_till_destroyed()
+
+    try:
+        return dlg.version
+    except AttributeError:
+        return None
