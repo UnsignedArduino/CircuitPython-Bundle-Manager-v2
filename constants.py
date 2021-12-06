@@ -19,7 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from pathlib import Path
+from helpers.operating_system import on_linux, on_macos
 
+BUNDLES_PATH = Path.cwd() / "bundles"
+if on_linux():
+    DRIVE_PATH = Path("/media")
+elif on_macos():
+    DRIVE_PATH = Path("/Volumes")
+else:
+    DRIVE_PATH = None
 SETTINGS_PATH = Path.cwd() / "settings.json"
 ICON_PATH = Path.cwd() / "icon.png"
 LICENSE_PATH = Path.cwd() / "LICENSE"
@@ -28,3 +36,8 @@ PROJECT_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v
 DOCUMENTATION_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/wiki"
 ISSUE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/issues"
 LICENSE_URL = "https://github.com/UnsignedArduino/CircuitPython-Bundle-Manager-v2/blob/main/LICENSE"
+
+SERVICE_NAME = "CircuitPython Bundle Manager v2"
+GITHUB_TOKEN_NAME = "github_token"
+BUNDLE_REPO = "adafruit/Adafruit_CircuitPython_Bundle"
+
