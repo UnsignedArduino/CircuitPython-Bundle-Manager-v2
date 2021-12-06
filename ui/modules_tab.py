@@ -137,6 +137,7 @@ class ModulesTab(Tab):
         Update the bundle modules.
         """
         logger.debug("Updating bundle modules")
+        self.search_entry.value = ""
         if self.cpybm.selected_bundle is not None:
             self.bundle_modules_frame.text = f"Modules in {self.cpybm.selected_bundle.title}"
             self.no_bundle_label.grid_remove()
