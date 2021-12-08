@@ -134,7 +134,7 @@ class CircuitPythonDrive(Drive):
             logger.debug(f"Found /lib folder at {self.lib_path}")
             self.lib_size = get_size(self.lib_path)
             logger.debug(f"Size of /lib folder is {self.lib_size}")
-            for path in self.lib_path.glob("*"):
+            for path in sorted(list(self.lib_path.glob("*"))):
                 logger.debug(f"Found installed module: {path.name}")
                 self.installed_modules.append(path.name)
         else:

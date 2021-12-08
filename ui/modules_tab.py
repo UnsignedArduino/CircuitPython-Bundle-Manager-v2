@@ -126,7 +126,7 @@ class ModulesTab(Tab):
         bundle = self.string_to_bundle[version]
         self.string_to_module = {}
         modules = []
-        for name, module in bundle.items():
+        for name, module in sorted(bundle.items()):
             self.string_to_module[name] = module
             if search == "" or search in name:
                 modules.append(name)
