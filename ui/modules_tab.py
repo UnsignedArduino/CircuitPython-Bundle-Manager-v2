@@ -271,6 +271,11 @@ class ModulesTab(Tab):
 
         def install():
             try:
+                if self.cpybm.selected_drive.lib_path is None:
+                    raise FileNotFoundError(f"Please create a /lib folder on "
+                                            f"the CircuitPython device and "
+                                            f"then refresh the available "
+                                            f"drives!")
                 self.cpybm.selected_drive.install_module(target)
             except Exception as e:
                 show_error(self, title="CircuitPython Bundle Manager: Error!",
