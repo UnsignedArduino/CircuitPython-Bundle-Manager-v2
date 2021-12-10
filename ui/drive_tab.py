@@ -184,6 +184,9 @@ class DriveTab(Tab):
                     self.code_storage_pbar.grid()
                     self.code_storage_pbar.value = selected_drive.code_py_size
                     self.code_storage_pbar.maximum = selected_drive.total_size
+                else:
+                    self.code_storage_label.grid_remove()
+                    self.code_storage_pbar.grid_remove()
                 if selected_drive.boot_py_path is not None and selected_drive.boot_py_path.exists():
                     self.boot_storage_label.grid()
                     self.boot_storage_label.text = f"{selected_drive.boot_py_path.name}: (" \
@@ -191,6 +194,9 @@ class DriveTab(Tab):
                     self.boot_storage_pbar.grid()
                     self.boot_storage_pbar.value = selected_drive.boot_py_size
                     self.boot_storage_pbar.maximum = selected_drive.total_size
+                else:
+                    self.boot_storage_label.grid_remove()
+                    self.boot_storage_pbar.grid_remove()
                 if selected_drive.lib_path is not None and selected_drive.lib_path.exists():
                     self.lib_storage_label.grid()
                     self.lib_storage_label.text = f"{selected_drive.lib_path.name}: (" \
@@ -198,6 +204,9 @@ class DriveTab(Tab):
                     self.lib_storage_pbar.grid()
                     self.lib_storage_pbar.value = selected_drive.lib_size
                     self.lib_storage_pbar.maximum = selected_drive.total_size
+                else:
+                    self.lib_storage_label.grid_remove()
+                    self.lib_storage_pbar.grid_remove()
             else:
                 self.boot_out_text.text = ""
                 self.boot_out_frame.enabled = False
