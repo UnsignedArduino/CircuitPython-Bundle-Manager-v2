@@ -19,16 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
 
+from TkZero.Dialog import show_error
+
 from constants import *
 from gui import CircuitPythonBundleManagerGUI
-from TkZero.Dialog import show_error
-from helpers.create_logger import create_logger
+from helpers.create_logger import create_logger, log_location
 
 
 def main():
     """
     The main program
     """
+    if log_location.exists():
+        log_location.write_text("")
+
     logger = create_logger(name=__name__, level=logging.DEBUG)
 
     logger.debug(f"Path to settings file is {SETTINGS_PATH}")

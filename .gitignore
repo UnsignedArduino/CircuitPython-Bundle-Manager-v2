@@ -1,6 +1,7 @@
 # From the program
 bundles
 settings.json
+log.log
 # From building
 *.spec
 build

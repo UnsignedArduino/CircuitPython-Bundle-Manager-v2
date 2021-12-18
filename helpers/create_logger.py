@@ -19,6 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
+from pathlib import Path
+
+log_location = Path.cwd() / "log.log"
 
 
 def create_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
@@ -37,13 +40,17 @@ def create_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     logger = logging.getLogger(name=name)
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level=level)
-    console_formatter = logging.Formatter("%(asctime)s - %(name)s - "
-                                          "%(levelname)s - %(message)s")
-    console_handler.setFormatter(fmt=console_formatter)
-    console_handler.setLevel(level=level)
+    file_handler = logging.FileHandler(log_location)
+    file_handler.setLevel(level=level)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - "
+                                  "%(levelname)s - %(message)s")
+    console_handler.setFormatter(fmt=formatter)
+    file_handler.setFormatter(fmt=formatter)
     logger.propagate = False
     if console_handler not in logger.handlers:
         logger.addHandler(hdlr=console_handler)
+    if file_handler not in logger.handlers:
+        logger.addHandler(hdlr=file_handler)
     logger.setLevel(level=level)
     logger.debug(f"Created logger named {repr(name)} with level {repr(level)}")
     logger.debug(f"Handlers for {repr(name)}: {repr(logger.handlers)}")
