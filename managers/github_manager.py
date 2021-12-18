@@ -32,12 +32,13 @@ from github.GitRelease import GitRelease
 from helpers.create_logger import create_logger
 from helpers.file_size import ByteSize
 from helpers.sanitizers import filename_sanitize, directory_sanitize
-from helpers.singleton import Singleton
 
 logger = create_logger(name=__name__, level=logging.DEBUG)
 
+github_instance = None
 
-class GitHubManager(metaclass=Singleton):
+
+class GitHubManager:
     def __init__(self, token: str, bundle_repo: str, bundle_path: Path,
                  is_community: bool = False):
         """
@@ -53,8 +54,14 @@ class GitHubManager(metaclass=Singleton):
         self.bundle_repo = bundle_repo
         self.bundle_path = bundle_path
         self.is_community = is_community
-        logger.debug("Authenticating with GitHub")
-        self.github = Github(token)
+        global github_instance
+        if github_instance is None:
+            logger.debug("Authenticating with GitHub")
+            self.github = Github(token)
+            github_instance = self.github
+        else:
+            logger.debug(f"Using existing authenticated GitHub object")
+            self.github = github_instance
         logger.debug("Getting repo...")
         self.repo = self.github.get_repo(self.bundle_repo)
         logger.debug("Getting releases...")
